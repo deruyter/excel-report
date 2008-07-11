@@ -1,0 +1,51 @@
+/************** include section **************/
+%{
+#include "common_parse.hpp"
+  extern char yy2text[];
+#define YYINITDEPTH 10000
+#define YYMAXDEPTH  100000
+%}
+
+/************** Tokens and Structures used **************/
+
+%token FL_SECTION  FL_NAME FL_SEPARATE FL_NUMBER FL_COMA
+
+%union {
+  char *name;
+  int val;
+  Section sec;
+}
+
+
+%type <val>
+	FL_NUMBER
+
+%type <name>
+	FL_NAME
+
+%type <sec>
+	FL_SECTION
+
+
+%start size_file
+
+%%
+/************** Grammar begin ***************/
+size_file :
+    | lines
+;
+
+lines :
+	one_line
+	|one_line lines
+;
+
+one_line:
+	FL_SECTION FL_SEPARATE FL_NAME FL_SEPARATE FL_NAME FL_COMA FL_NUMBER
+		{current_session->add_test_size($3,$5,$1,$7,disc_set);}
+	| FL_NAME FL_SEPARATE FL_NAME FL_SEPARATE FL_NAME FL_COMA FL_NUMBER 
+		{if(warn_level) fprintf(stderr,"WARNING : Unknown section %s ignored\n",$1);}
+;
+
+
+

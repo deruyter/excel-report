@@ -1,0 +1,100 @@
+/************** include section **************/
+%{
+#include "common_parse.hpp"
+  extern char yy1text[];
+%}
+
+/************** Tokens and Structures used **************/
+
+%token FL_VALID FL_TOOLSET FL_VERSION FL_SIMU FL_SIM_FLAGS FL_COMP_FLAGS FL_MACHINE_NAME
+%token FL_DAY FL_MONTH FL_NUMBER FL_NAME FL_MODE FL_LOGDIR FL_TESTS FL_DATE FL_OPTION
+
+%union {
+  char *name;
+  int val;
+}
+
+
+%type <val>
+	FL_MONTH
+	FL_NUMBER
+
+%type <name>
+	FL_NAME
+	FL_DATE
+	FL_OPTION
+
+%start info_file
+
+%%
+/************** Grammar begin ***************/
+info_file : 
+	valid toolset ccversion simversion ccflags simflags mode logdir tests
+;
+
+valid :
+	FL_VALID FL_DAY FL_MONTH FL_NUMBER FL_NUMBER FL_NUMBER FL_NUMBER FL_NAME FL_NUMBER
+	{current_session->set_date($4,$3,$9,$5,$6,$7);}
+; 
+
+toolset :
+	FL_TOOLSET FL_NAME
+	{current_session->set_compiler_name($2);}
+;
+
+ccversion : 
+	FL_VERSION FL_NAME FL_DATE 
+	{current_session->set_compiler_version($2,$3);}
+;
+
+simversion :
+	FL_SIMU 
+	|FL_SIMU FL_NAME
+	{current_session->set_simulator_version($2);}
+;
+
+ccflags :
+	FL_COMP_FLAGS
+	|FL_COMP_FLAGS ccopt_list
+;
+
+ccopt_list :
+	FL_OPTION
+	{current_session->add_compiler_flags($1);}
+	|ccopt_list FL_OPTION 
+	{current_session->add_compiler_flags($2);}
+;
+
+simflags :
+	FL_SIM_FLAGS	
+	|FL_SIM_FLAGS sim_name_list
+;
+
+sim_name_list :
+	FL_OPTION
+	{current_session->add_simulator_flags($1);}
+	|sim_name_list FL_OPTION
+	{current_session->add_simulator_flags($2);}
+;
+
+mode :
+	FL_MODE FL_NAME
+	{current_session->set_support_mode($2);}
+;
+
+logdir :
+	FL_LOGDIR FL_MACHINE_NAME FL_NAME
+	| FL_LOGDIR FL_NAME
+;
+
+tests :
+	FL_TESTS name_list
+;
+
+name_list :
+	FL_NAME
+	{current_session->add_test_name($1);}
+	|name_list FL_NAME
+	{current_session->add_test_name($2);}
+;
+

@@ -1,0 +1,45 @@
+/************** include section **************/
+%{
+#include "common_parse.hpp"
+  extern char yy3text[];
+%}
+
+/************** Tokens and Structures used **************/
+
+%token FL_NAME FL_NUMBER FL_COMA
+
+%union {
+  char *name;
+  int val;
+}
+
+
+%type <val>
+	FL_NUMBER
+
+%type <name>
+	FL_NAME
+
+
+%start cycle_file
+
+%%
+/************** Grammar begin ***************/
+cycle_file :
+	| lines
+;
+
+
+
+lines:
+	one_line
+	|one_line lines
+;
+
+one_line:
+	 FL_NAME FL_COMA FL_NUMBER
+	{current_session->add_cycle_count($1,$3); }
+;
+
+
+
