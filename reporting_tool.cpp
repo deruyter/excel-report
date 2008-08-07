@@ -11,6 +11,8 @@ int warn_level;
 bool core_only, ext_only;
 bool Debug_on;
 bool Cruise_Control;
+bool Monitoring;
+SummaryClass summary;
 
 void man() {
 	printf("Syntax is:\n\treport [Options] <log directory>+\n ");
@@ -99,7 +101,7 @@ int main(int argc, char* argv[]) {
 	char filename[1024];
 	char *ref_file=NULL, *key_name=NULL;
 	RootDataClass rootdata=RootDataClass();
-	SummaryClass summary=SummaryClass();
+	summary=SummaryClass();
 	bool obj_size = true;
 	bool bin_size = true;
 	bool cycle = true;
@@ -110,6 +112,7 @@ int main(int argc, char* argv[]) {
 	int cycle_data=0;
 	int nb_tst=0;
 	Cruise_Control=false;
+	Monitoring=false;
 	NameList *test_names = new NameList;
 	warn_level=1;
 	core_only=false;
@@ -175,7 +178,22 @@ int main(int argc, char* argv[]) {
 			Debug_on=true;
 		} else if (!strcmp((*argv), "-cruisec")) {
 			Cruise_Control=true;
-		} else {
+        } else if (!strcmp((*argv), "-monitor")) {
+            Monitoring=true;
+            generate_output_info=false;
+            warn_level=0;
+            compare_options=false;
+            size[RODATA_PLUS_TEXT]=1;
+            ref_file=strdup("References.txt");
+            obj_size=false;
+            bin_size=false;
+            cycle=false;
+        } else if (!strcmp((*argv), "-default")) {
+            warn_level=0;
+            compare_options=false;
+            size[RODATA_PLUS_TEXT]=1;
+            ref_file=strdup("References.txt");         
+        } else {
 			test_names->push_back(strdup(*argv));
 			nb_tst++;
 		}
@@ -240,17 +258,17 @@ int main(int argc, char* argv[]) {
 			sprintf(filename,"%s/FAILED",current_session->get_path());
 			if (Debug_on) printf("Parse FAIL : %s, %d\n",filename,__LINE__);
 			parse_fail(filename);
-			if(obj_size) {
+			if(obj_size || Monitoring) {
 				sprintf(filename,"%s/codeSize.txt",current_session->get_path());
 				if (Debug_on) printf("Parse Codesize : %s, %d\n",filename,__LINE__);
 				parse_size(filename,SIZE_OBJ);
 			}
-			if(bin_size) {
+			if(bin_size || Monitoring) {
 				sprintf(filename,"%s/BinaryCodeSize.txt",current_session->get_path());
 				if (Debug_on) printf("Parse Binary Codesize : %s, %d\n",filename,__LINE__);
 				parse_size(filename,SIZE_BIN);
 			}
-			if(cycle) {
+			if(cycle || Monitoring) {
 				sprintf(filename,"%s/cyclesCount.txt",current_session->get_path());
 				if (Debug_on) printf("Parse Cycles : %s, %d\n",filename,__LINE__);
 				parse_cycle(filename);
@@ -269,17 +287,17 @@ int main(int argc, char* argv[]) {
 				sprintf(filename,"%s/%s/FAILED",current_session->get_path(),tmp_name);
 				if (Debug_on) printf("Parse FAIL : %s, %d\n",filename,__LINE__);
 				parse_fail(filename);
-				if(obj_size) {
+				if(obj_size || Monitoring) {
 					sprintf(filename,"%s/%s/codeSize.txt",current_session->get_path(),tmp_name);
 					if (Debug_on) printf("Parse Codesize : %s, %d\n",filename,__LINE__);
 					parse_size(filename,SIZE_OBJ);
 				}
-				if(bin_size) {
+				if(bin_size || Monitoring) {
 					sprintf(filename,"%s/%s/BinaryCodeSize.txt",current_session->get_path(),tmp_name);
 					if (Debug_on) printf("Parse Binary Codesize : %s, %d\n",filename,__LINE__);
 					parse_size(filename,SIZE_BIN);
 				}
-				if(cycle) {
+				if(cycle || Monitoring) {
 					sprintf(filename,"%s/%s/cyclesCount.txt",current_session->get_path(),tmp_name);
 					if (Debug_on) printf("Parse Cycles : %s, %d\n",filename,__LINE__);
 					parse_cycle(filename);
@@ -288,8 +306,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	if (!output)
-		output = new Excel_Output("default_output.xls");
+	if (!output) 	output = new Excel_Output("default_output.xls");
 
 	output->generate_header();
 	output->create_summary(rootdata);
@@ -302,72 +319,72 @@ int main(int argc, char* argv[]) {
 	if (i==LAST_SECTION)
 		size[TEXT]=1;
 
-	if (generate_output_info) {
-		ForEachRPt(rootdata.get_sessions(),iter_session) {
-			summary.add_session((*iter_session)->get_path(), (*iter_session)->get_name());
-//			printf("Add : %s, %s\n",(*iter_session)->get_path(), (*iter_session)->get_name());
-		}
+	ForEachRPt(rootdata.get_sessions(),iter_session) {
+		summary.add_session((*iter_session)->get_path(), (*iter_session)->get_name());
 	}
-
 	
 	/* For a better summary*/
-	if (obj_size) {
-		rootdata.compute_data(SIZE_OBJ);
-		size_obj_data = rootdata.get_nb_max_data();
-		if (generate_output_info) {
-			ForEachPt(rootdata.get_disc(),iter) {
-				ForEachPt(rootdata.get_sessions(),iter_session) {
-					summary.add_summary_value((*iter_session)->get_path(),(*iter_session)->get_name(),(*iter)->get_test(),SIZE_OBJ,(*iter_session)->get_size(*iter,RODATA_PLUS_TEXT,SIZE_OBJ));
-				}
+    if (obj_size||Monitoring) {
+    	rootdata.compute_data(SIZE_OBJ);
+    	size_obj_data = rootdata.get_nb_max_data();
+		ForEachPt(rootdata.get_disc(),iter) {
+			ForEachPt(rootdata.get_sessions(),iter_session) {
+				summary.add_summary_value((*iter_session)->get_path(),(*iter_session)->get_name(),(*iter)->get_test(),SIZE_OBJ,(*iter_session)->get_size(*iter,RODATA_PLUS_TEXT,SIZE_OBJ,false));
 			}
 		}
 	}
-	if (bin_size) {
-		rootdata.compute_data(SIZE_BIN);
-		size_bin_data = rootdata.get_nb_max_data();
-		if (generate_output_info) {
-			ForEachPt(rootdata.get_disc(),iter) {
-				ForEachPt(rootdata.get_sessions(),iter_session) {
-					summary.add_summary_value((*iter_session)->get_path(),(*iter_session)->get_name(),(*iter)->get_test(),SIZE_BIN,(*iter_session)->get_size(*iter,RODATA_PLUS_TEXT,SIZE_BIN));
-				}
+    if (bin_size||Monitoring) {
+    	rootdata.compute_data(SIZE_BIN);
+    	size_bin_data = rootdata.get_nb_max_data();
+		ForEachPt(rootdata.get_disc(),iter) {
+			ForEachPt(rootdata.get_sessions(),iter_session) {
+				summary.add_summary_value((*iter_session)->get_path(),(*iter_session)->get_name(),(*iter)->get_test(),SIZE_BIN,(*iter_session)->get_size(*iter,RODATA_PLUS_TEXT,SIZE_BIN,false));
 			}
 		}
-	}
-	if (cycle) {
-		rootdata.compute_data(SPEED);
-		cycle_data = rootdata.get_nb_max_data();
-		if (generate_output_info) {
-			ForEachPt(rootdata.get_disc(),iter) {
-				ForEachPt(rootdata.get_sessions(),iter_session) {
-					summary.add_summary_value((*iter_session)->get_path(),(*iter_session)->get_name(),(*iter)->get_test(),SPEED,(*iter_session)->get_cycle(*iter));
-				}
+    }
+    if (cycle||Monitoring) {
+    	rootdata.compute_data(SPEED);
+    	cycle_data = rootdata.get_nb_max_data();
+		ForEachPt(rootdata.get_disc(),iter) {
+			ForEachPt(rootdata.get_sessions(),iter_session) {
+				summary.add_summary_value((*iter_session)->get_path(),(*iter_session)->get_name(),(*iter)->get_test(),SPEED,(*iter_session)->get_cycle(*iter));
 			}
 		}
+    }
+    if (false) {
+        output->create_summary_ver2(rootdata, &size[0], obj_size, size_obj_data, bin_size, size_bin_data, cycle, cycle_data);
+    }
+	/* End Summary session*/
+
+	/*Monitoring Session*/
+	if (Monitoring) {
+	    set_arm_ref_value();
+        rootdata.compute_monitored_data(SIZE_OBJ);
+        output->create_monitored_page(rootdata, SIZE_OBJ);
+        rootdata.compute_monitored_data(SIZE_BIN);
+        output->create_monitored_page(rootdata, SIZE_BIN);
+        rootdata.compute_monitored_data(SPEED);
+        output->create_monitored_page(rootdata, SPEED);
+        rootdata.compute_monitored_data(SPEED_Vs_ARM);
+        output->create_monitored_page(rootdata, SPEED_Vs_ARM);
 	}
-
-	output->create_summary_ver2(rootdata, &size[0], obj_size, size_obj_data, bin_size, size_bin_data, cycle, cycle_data, summary);
-
-	/* End */
-
+	
 	/*Size sheet generation*/
 	if (obj_size) {
 		rootdata.compute_data(SIZE_OBJ);
 		for (i=0; i<LAST_SECTION; i++) {
-			if (size[i])
-				output->create_page(rootdata, SIZE_OBJ, (Section)i);
+			if (size[i]) output->create_page(rootdata, SIZE_OBJ, (Section)i);
 		}
 	}
 
 	if (bin_size) {
 		rootdata.compute_data(SIZE_BIN);
 		for (i=0; i<LAST_SECTION; i++) {
-			if (size[i])
-				output->create_page(rootdata, SIZE_BIN, (Section)i);
+			if (size[i])  output->create_page(rootdata, SIZE_BIN, (Section)i);
 		}
 	}
 
 	/*Speed sheet generation*/
-
 	if (cycle) {
 		rootdata.compute_data(SPEED);
 		output->create_page(rootdata, SPEED, LAST_SECTION);

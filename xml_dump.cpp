@@ -1,6 +1,8 @@
 #include "xml_dump.hpp"
 #include <math.h>
 
+
+
 Excel_Output::Excel_Output(char* name) {
   _name = strdup(name);
   _file = fopen(_name,"w");
@@ -49,6 +51,7 @@ void Excel_Output::string_comment_bold(char *string) {fprintf(_file, "<B><Font h
 void Excel_Output::number_cell(int val) {fprintf(_file, "<Cell><Data ss:Type =\"Number\">%d</Data></Cell>\n",val);}
 void Excel_Output::number_cell(int style_id,int val) {fprintf(_file, "<Cell ss:StyleID=\"%s\"><Data ss:Type =\"Number\">%d</Data></Cell>\n",style(style_id),val);}
 void Excel_Output::number_cell(double val) {fprintf(_file, "<Cell><Data ss:Type =\"Number\">%f</Data></Cell>\n",val);}
+void Excel_Output::number_cell(int style_id,double val) {fprintf(_file, "<Cell ss:StyleID=\"%s\"><Data ss:Type =\"Number\">%f</Data></Cell>\n",style(style_id),val);}
 
 void Excel_Output::start_row() { fprintf(_file,"<Row>\n");}
 void Excel_Output::start_row(int position) { fprintf(_file, "<Row ss:Index=\"%d\">\n",position);}
@@ -209,25 +212,27 @@ void  Excel_Output::apply_format(int mode, int session_number, int nb_data) {
     
 }
 
+void Excel_Output::create_data_page(RootDataClass& rootdata,  char *name, char *title, int disc, Section sec, bool monitor) {
 
-void Excel_Output::create_data_page(RootDataClass& rootdata,  char *name, char *title, int disc, Section sec) {
-
+  int my_session_number=rootdata.get_nb_sessions();
+  if (monitor && (sec==TEXT || disc==SPEED_Vs_ARM))   my_session_number++;
   fprintf(_file, "<Worksheet  ss:Name=\"%s\">\n<Table>\n", name);
   // Columns formatting
-  fprintf(_file, "<Column ss:AutoFitWidth=\"0\" ss:Width=\"90\"/>\n<Column ss:AutoFitWidth=\"0\" ss:Width=\"180\"/>\n<Column ss:AutoFitWidth=\"0\" ss:Width=\"350\"/>\n<Column ss:AutoFitWidth=\"0\" ss:Width=\"75\" ss:Span=\"%02d\"/>\n",rootdata.get_nb_sessions()-1);
+  fprintf(_file, "<Column ss:AutoFitWidth=\"0\" ss:Width=\"90\"/>\n<Column ss:AutoFitWidth=\"0\" ss:Width=\"180\"/>\n<Column ss:AutoFitWidth=\"0\" ss:Width=\"80\"/>\n<Column ss:AutoFitWidth=\"0\" ss:Width=\"75\" ss:Span=\"%02d\"/>\n",my_session_number-1);
 
   // Title
   start_row(); string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID_16,title); end_row();
   
   // Number of FAILs
   start_row(NBFAILS_FIRST_ROW); string_cell(NBFAILS_FIRST_COL,BOLDCENTER_STYL_ID,"Num of FAILs");
-  for (int i = 0 ; i < rootdata.get_nb_sessions() ; i++) {
+  for (int i = 0 ; i < my_session_number ; i++) {
     fprintf(_file,"<Cell ss:Formula=\"=COUNTIF(R14C:R%uC,&quot;FAIL*&quot;)\"></Cell>\n",HEADER_NB_ROWS + rootdata.get_nb_max_data()) ;
   }
   end_row();
 
   // Sessions
   start_row(VERS_NUM_FIRST_ROW); string_cell(VERS_NUM_FIRST_COL,BOLDCENTER_STYL_ID,"Session");
+  if (monitor && sec==TEXT) string_cell(BOLDCENTER_STYL_ID,"ARM Ref");
   ForEachPt(rootdata.get_sessions(),iter_session) {
     if(Cruise_Control) 	string_cell(BOLDCENTER_STYL_ID,(*iter_session)->get_cc_name());
     else				string_cell(BOLDCENTER_STYL_ID,(*iter_session)->get_name());
@@ -236,6 +241,7 @@ void Excel_Output::create_data_page(RootDataClass& rootdata,  char *name, char *
     
   // Tags
   start_row();string_cell(VERS_NUM_FIRST_COL,BOLDCENTER_STYL_ID,"Tags");
+  if (monitor && (sec==TEXT || disc==SPEED_Vs_ARM)) string_cell(BOLDCENTER_STYL_ID,"ARM Ref");
   ForEachPt(rootdata.get_sessions(),iter_session) {
     if(Cruise_Control) string_cell(BOLDCENTER_STYL_ID,(*iter_session)->get_cc_name());
     else 			   string_cell(BOLDCENTER_STYL_ID,(*iter_session)->get_name());
@@ -250,15 +256,21 @@ void Excel_Output::create_data_page(RootDataClass& rootdata,  char *name, char *
     start_row();
     string_cell((*iter)->get_test());
     string_cell((*iter)->get_target());
-    string_cell();
-    ForEachPt((*iter)->get_options(),opt) {
-      string_out(*opt);
-      string_out(" ");
+    if (monitor && disc==SPEED_Vs_ARM && arm_ref_value[(*iter)->get_test()][(*iter)->get_target()].iter > 0) {
+       number_cell(arm_ref_value[(*iter)->get_test()][(*iter)->get_target()].iter);
+    } else {
+        string_cell();
+        ForEachPt((*iter)->get_options(),opt) {
+          string_out(*opt);
+          string_out(" ");
+        }
+        string_cell_end();
     }
-    string_cell_end();
+    if (monitor && sec==TEXT) number_cell(arm_ref_value[(*iter)->get_test()][(*iter)->get_target()].size);
+    if (monitor && disc==SPEED_Vs_ARM) number_cell(arm_ref_value[(*iter)->get_test()][(*iter)->get_target()].cycles);
     ForEachPt(rootdata.get_sessions(),iter_session) {
       int val;
-      if (disc!=SPEED) val = (*iter_session)->get_size(*iter,sec,disc);
+      if (disc!=SPEED && disc!=SPEED_Vs_ARM) val = (*iter_session)->get_size(*iter,sec,disc,monitor);
       else             val = (*iter_session)->get_cycle(*iter);
 	  switch(val) {
 	  case NOT_EXECUTED: string_cell("(not executed)");break;
@@ -270,19 +282,22 @@ void Excel_Output::create_data_page(RootDataClass& rootdata,  char *name, char *
     }
     end_row();
   }
-
   fprintf(_file, "</Table><WorksheetOptions xmlns=\"urn:schemas-microsoft-com:office:excel\"><Visible>SheetHidden</Visible><Zoom>75</Zoom></WorksheetOptions>\n");
-//  fprintf(_file, "</Table><WorksheetOptions xmlns=\"urn:schemas-microsoft-com:office:excel\"><Zoom>75</Zoom></WorksheetOptions>\n");
-  apply_format(0, rootdata.get_nb_sessions(),rootdata.get_nb_max_data());
+  //fprintf(_file, "</Table><WorksheetOptions xmlns=\"urn:schemas-microsoft-com:office:excel\"><Zoom>75</Zoom></WorksheetOptions>\n");
+  apply_format(0,my_session_number,my_session_number);
   fprintf(_file, "</Worksheet>\n");
 }
 
+static bool is_normalized_test(char *name) {
+    if (!strcmp(name,"eembc_networking")) return true;
+    if (!strcmp(name,"eembc_consumer")) return true;
+    return false;
+}
 
-
-void Excel_Output::create_computed_page(RootDataClass& rootdata,  char *name, char *title, char *data_page, int mode, int disc, Section sec) {
+void Excel_Output::create_computed_page(RootDataClass& rootdata,  char *name, char *title, char *data_page, int mode, int disc, Section sec, bool monitor) {
   int nb_sessions_to_dump=rootdata.get_nb_sessions();
-  int i;
-  if (mode ==3) nb_sessions_to_dump ++;
+  int i,j;
+  if (mode == 3 || (monitor && (sec==TEXT || disc==SPEED_Vs_ARM))) nb_sessions_to_dump ++;
   fprintf(_file, "<Worksheet  ss:Name=\"%s\">\n<Table>\n", name);
   // Columns formatting
   fprintf(_file, "<Column ss:AutoFitWidth=\"0\" ss:Width=\"90\"/>\n<Column ss:AutoFitWidth=\"0\" ss:Width=\"180\"/>\n<Column ss:AutoFitWidth=\"0\" ss:Width=\"150\"/>\n<Column ss:AutoFitWidth=\"0\" ss:Width=\"75\" ss:Span=\"%02d\"/>\n",nb_sessions_to_dump-1);
@@ -342,7 +357,9 @@ void Excel_Output::create_computed_page(RootDataClass& rootdata,  char *name, ch
   start_row();string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Total");
   switch (mode) {
   case 1:
-    for (i = 0 ; i < nb_sessions_to_dump-1 ; i++) {
+    for (j = 0 ; j < nb_sessions_to_dump-1 ; j++) {
+      int i=j;
+      if (monitor && (sec==TEXT||disc==SPEED_Vs_ARM)) i++;
       fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=sumif(R%dC%d:R%dC%d,&quot;&gt;0&quot;,%s!R%dC%d:%s!R%dC%d)/sumif(%s!R%dC%d:%s!R%dC%d,&quot;&gt;0&quot;,R%dC%d:R%dC%d)\"></Cell>\n",
 	      style(PERCENT_STYL_ID), 
 	      HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL, 
@@ -420,11 +437,15 @@ void Excel_Output::create_computed_page(RootDataClass& rootdata,  char *name, ch
     
   // Tags
   start_row();string_cell(VERS_NUM_FIRST_COL,BOLDCENTER_STYL_ID,"Tags");
-  if(mode == 3 )  fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=INDIRECT(ADDRESS(ROW(),3+R%dC2,1,TRUE,&quot;%s&quot;))\"></Cell>\n",style(BOLDCENTER_STYL_ID),VERS_NUM_FIRST_ROW,data_page) ;
-  
-  ForEachPt(rootdata.get_sessions(),iter_session) {
-    if(Cruise_Control) 	string_cell(BOLDCENTER_STYL_ID,(*iter_session)->get_cc_name());
-    else				string_cell(BOLDCENTER_STYL_ID,(*iter_session)->get_name());
+  if (mode == 3 ) {
+      fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=INDIRECT(ADDRESS(ROW(),3+R%dC2,1,TRUE,&quot;%s&quot;))\"></Cell>\n",style(BOLDCENTER_STYL_ID),VERS_NUM_FIRST_ROW,data_page) ;
+      ForEachPt(rootdata.get_sessions(),iter_session) {
+        if(Cruise_Control)  string_cell(BOLDCENTER_STYL_ID,(*iter_session)->get_cc_name());
+        else                string_cell(BOLDCENTER_STYL_ID,(*iter_session)->get_name());
+      }      
+  } else {
+      for (i = 0 ; i < nb_sessions_to_dump ; i++)
+          fprintf(_file,"<Cell ss:Formula=\"=%s!RC%d\"></Cell>\n",data_page,TABLE_VALUES_FIRST_COL+i) ;
   }
   end_row();
   
@@ -433,83 +454,143 @@ void Excel_Output::create_computed_page(RootDataClass& rootdata,  char *name, ch
 
   // VALUES
   ForEachPt(rootdata.get_disc(),iter) {
-    int ref=-1;
-    bool first=true;
-    start_row();
-    fprintf(_file,"<Cell ss:Formula=\"=%s!RC1\"></Cell>\n",data_page) ;
-    fprintf(_file,"<Cell ss:Formula=\"=%s!RC2\"></Cell>\n",data_page) ;
-    fprintf(_file,"<Cell ss:Formula=\"=%s!RC3\"></Cell>\n",data_page) ;
+        int ref=-1;
+        bool first=true;
+        start_row();
+        fprintf(_file,"<Cell ss:Formula=\"=%s!RC1\"></Cell>\n",data_page);
+        fprintf(_file,"<Cell ss:Formula=\"=%s!RC2\"></Cell>\n",data_page);
+        fprintf(_file,"<Cell ss:Formula=\"=%s!RC3\"></Cell>\n",data_page);
 
-    if(mode == 3) fprintf(_file,"<Cell ss:Formula=\"=INDIRECT(ADDRESS(ROW(),3+R%dC2,1,TRUE,&quot;%s&quot;))\"></Cell>\n",VERS_NUM_FIRST_ROW,data_page) ;
+        if(mode == 3) fprintf(_file,"<Cell ss:Formula=\"=INDIRECT(ADDRESS(ROW(),3+R%dC2,1,TRUE,&quot;%s&quot;))\"></Cell>\n",VERS_NUM_FIRST_ROW,data_page);
+        i=0;
+        if (monitor && (sec==TEXT||disc==SPEED_Vs_ARM)) {
+            first=false;
+            ref=0;
+            fprintf(_file,"<Cell ss:Formula=\"=%s!RC%d\"></Cell>\n",data_page,TABLE_VALUES_FIRST_COL) ;
+            i++;
+        }
+        ForEachPt(rootdata.get_sessions(),iter_session) {
+            //TDR
+            int value;
+            if (disc!=SPEED && disc!=SPEED_Vs_ARM) value = (*iter_session)->get_size(*iter,sec,disc,monitor);
+            else value = (*iter_session)->get_cycle(*iter);
+            if(disc==SPEED_Vs_ARM && is_normalized_test((*iter)->get_test())) {
+                fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=if(%s!RC%d=0,&quot;div by 0&quot;,((1000000*RC3)/%s!RC)/%s!RC%d)\"></Cell>\n",
+                                            style(PERCENT_STYL_ID),
+                                            data_page,ref+TABLE_VALUES_FIRST_COL,
+                                            data_page,
+                                            data_page,ref+TABLE_VALUES_FIRST_COL);
+                continue;
+            } 
+            if (value != -1 && ref == -1) ref=i;
+            switch(mode) {
+                case 1:
+                case 2:
+                if (first) {
+                    first=false;
+                    switch(value) {
+                        case NOT_EXECUTED: string_cell("(not executed)");break;
+                        case HAS_FAILED: string_cell("FAIL(make error)");break;
+                        case NOT_RELEVANT: string_cell("Not Relevant.");break;
+                        case -1: string_cell("No result.");break;
+                        default: number_cell(value); break;
+                    }
+                    break;
+                }
+                if(ref == -1) {string_cell("-");break;}
+                if(ref == i) {string_cell("First Value");break;}
+                switch(value) {
+                    case NOT_EXECUTED: string_cell("(not executed)");break;
+                    case HAS_FAILED: string_cell("FAIL(make error)");break;
+                    case NOT_RELEVANT: string_cell("Not Relevant.");break;
+                    case -1: string_cell("No result.");break;
+                    default:
+                    if(mode == 1) fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=if(%s!RC%d=0,&quot;div by 0&quot;,%s!RC/%s!RC%d)\"></Cell>\n",
+                            style(PERCENT_STYL_ID),
+                            data_page,ref+TABLE_VALUES_FIRST_COL,
+                            data_page,
+                            data_page,ref+TABLE_VALUES_FIRST_COL);
+                    else {
+                        fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=if(OR(%s!RC%d=0,T(%s!RC%d)&lt;&gt;&quot;&quot;,T(%s!RC)&lt;&gt;&quot;&quot;),&quot;- &quot;,%s!RC/%s!RC%d)\"></Cell>\n",
+                                style(PERCENT_STYL_ID), data_page,i-1+TABLE_VALUES_FIRST_COL,
+                                data_page,i-1+TABLE_VALUES_FIRST_COL,data_page,
+                                data_page,
+                                data_page,i-1+TABLE_VALUES_FIRST_COL );
+                    }
+                    break;
+                }
+                break;
+                case 3:
+                fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=if(T(%s!RC%d)&lt;&gt;&quot;&quot;,%s!RC%d,if(OR(RC%d=0,T(RC%d)&lt;&gt;&quot;&quot;,T(%s!RC%d)&lt;&gt;&quot;&quot;),&quot;- &quot;,%s!RC%d/RC%d))\"></Cell>\n",
+                        style(PERCENT_STYL_ID),data_page,TABLE_VALUES_FIRST_COL+i,data_page,TABLE_VALUES_FIRST_COL+i,TABLE_VALUES_FIRST_COL,TABLE_VALUES_FIRST_COL,data_page,TABLE_VALUES_FIRST_COL+i, data_page,TABLE_VALUES_FIRST_COL+i, TABLE_VALUES_FIRST_COL);
+                /*    	  fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=if(OR(RC%d=0,T(RC%d)&lt;&gt;&quot;&quot;,T(%s!RC%d)&lt;&gt;&quot;&quot;),&quot;- &quot;,%s!RC%d/RC%d)\"></Cell>\n",
+                 style(PERCENT_STYL_ID),TABLE_VALUES_FIRST_COL,TABLE_VALUES_FIRST_COL,data_page,TABLE_VALUES_FIRST_COL+i, data_page,TABLE_VALUES_FIRST_COL+i,	TABLE_VALUES_FIRST_COL);
+                 */break;
+                default:
+                printf("Should not happened\n");
+                exit(2);
 
-    i=0;
-    ForEachPt(rootdata.get_sessions(),iter_session) {
-      //TDR
-      int value;
-      if (disc!=SPEED) value = (*iter_session)->get_size(*iter,sec,disc);
-      else             value = (*iter_session)->get_cycle(*iter);
-      if (value != -1 && ref == -1) ref=i;
-      switch(mode) {
-      case 1:
-      case 2:
-	if (first) {
-	  first=false;
-	  switch(value) {
-	  case NOT_EXECUTED: string_cell("(not executed)");break;
-	  case HAS_FAILED:   string_cell("FAIL(make error)");break;
-	  case NOT_RELEVANT: string_cell("Not Relevant.");break; 
-	  case -1:           string_cell("No result.");break;
-	  default:           number_cell(value); break;
-	  }
-	  break;
-	}
-	if(ref == -1) { string_cell("-");break;}
-	if(ref == i)  {string_cell("First Value");break;}
-	switch(value) {
-	case NOT_EXECUTED: string_cell("(not executed)");break;
-	case HAS_FAILED:   string_cell("FAIL(make error)");break;
-	case NOT_RELEVANT: string_cell("Not Relevant.");break; 
-	case -1:           string_cell("No result.");break;
-	default:
-	  if(mode == 1)	fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=if(%s!RC%d=0,&quot;div by 0&quot;,%s!RC/%s!RC%d)\"></Cell>\n",
-				style(PERCENT_STYL_ID),
-				data_page,ref+TABLE_VALUES_FIRST_COL,
-				data_page,
-				data_page,ref+TABLE_VALUES_FIRST_COL);
-	  else {
-	    fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=if(OR(%s!RC%d=0,T(%s!RC%d)&lt;&gt;&quot;&quot;,T(%s!RC)&lt;&gt;&quot;&quot;),&quot;- &quot;,%s!RC/%s!RC%d)\"></Cell>\n",
-		    style(PERCENT_STYL_ID), data_page,i-1+TABLE_VALUES_FIRST_COL, 
-		    data_page,i-1+TABLE_VALUES_FIRST_COL,data_page,
-		    data_page,
-		    data_page,i-1+TABLE_VALUES_FIRST_COL );
-	  }
-	  break;
-	}
-	break;
-      case 3:
-    	  fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=if(T(%s!RC%d)&lt;&gt;&quot;&quot;,%s!RC%d,if(OR(RC%d=0,T(RC%d)&lt;&gt;&quot;&quot;,T(%s!RC%d)&lt;&gt;&quot;&quot;),&quot;- &quot;,%s!RC%d/RC%d))\"></Cell>\n",
-    			  style(PERCENT_STYL_ID),data_page,TABLE_VALUES_FIRST_COL+i,data_page,TABLE_VALUES_FIRST_COL+i,TABLE_VALUES_FIRST_COL,TABLE_VALUES_FIRST_COL,data_page,TABLE_VALUES_FIRST_COL+i, data_page,TABLE_VALUES_FIRST_COL+i,	TABLE_VALUES_FIRST_COL);
-/*    	  fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=if(OR(RC%d=0,T(RC%d)&lt;&gt;&quot;&quot;,T(%s!RC%d)&lt;&gt;&quot;&quot;),&quot;- &quot;,%s!RC%d/RC%d)\"></Cell>\n",
-    			  style(PERCENT_STYL_ID),TABLE_VALUES_FIRST_COL,TABLE_VALUES_FIRST_COL,data_page,TABLE_VALUES_FIRST_COL+i, data_page,TABLE_VALUES_FIRST_COL+i,	TABLE_VALUES_FIRST_COL);
-*/	break;
-      default: 
-	printf("Should not happened\n");
-	exit(2);
-	
-      } 
-      i++;
+            }
+            i++;
+        }
+        end_row();
     }
-    end_row();
+  int nb_max_data=rootdata.get_nb_max_data();
+  if(monitor && disc==SPEED) {
+      start_row();
+      string_cell("Developer Validation suite");
+      string_cell("Developer Validation suite");
+      string_cell("");
+      dump_cycle_summary_value(Run_Valid);
+      end_row();
+      nb_max_data++;
   }
-//  fprintf(_file, "</Table><WorksheetOptions xmlns=\"urn:schemas-microsoft-com:office:excel\"><Visible>SheetHidden</Visible><Zoom>75</Zoom></WorksheetOptions>\n");
+  if(Monitoring && !monitor && disc==SIZE_OBJ) {
+      start_row();
+      string_cell("Developer Validation suite");
+      string_cell("Developer Validation suite");
+      string_cell("");
+      dump_size_summary_value(Run_Valid,true);
+      end_row();
+      nb_max_data++;
+  }
+  //  fprintf(_file, "</Table><WorksheetOptions xmlns=\"urn:schemas-microsoft-com:office:excel\"><Visible>SheetHidden</Visible><Zoom>75</Zoom></WorksheetOptions>\n");
   fprintf(_file, "</Table><WorksheetOptions xmlns=\"urn:schemas-microsoft-com:office:excel\"><Zoom>75</Zoom></WorksheetOptions>\n");
-  if (mode == 3) apply_format(1, nb_sessions_to_dump+1, rootdata.get_nb_max_data());
-  else           apply_format(1, nb_sessions_to_dump, rootdata.get_nb_max_data());
+  if (mode == 3) apply_format(1, nb_sessions_to_dump+1, nb_max_data);
+  else           apply_format(1, nb_sessions_to_dump, nb_max_data);
   fprintf(_file, "</Worksheet>\n");
 }
 
-
-
+void Excel_Output::create_monitored_page(RootDataClass& rootdata, int disc) {
+    char data_name[256],sheet_name[256],title[1024];
+    if(rootdata.get_nb_max_data()==0) return;
+    if (disc == SIZE_OBJ) {
+      sprintf(title,"Size Datas on Obj Section");
+      sprintf(data_name,"Size_Text_Obj");
+      create_data_page(rootdata, data_name, title, disc, TEXT, true);
+      sprintf(title,"Obj Size analysis on TEXT Section versus First");
+      sprintf(sheet_name,"Text_Size_Obj_Vs_Arm");
+      create_computed_page(rootdata, sheet_name, title, data_name, 1,disc,TEXT, true);
+      return;
+    }
+    if (disc == SIZE_BIN) {
+      sprintf(data_name,"Size_Text_Rodata_Obj");
+      create_data_page(rootdata, data_name, title, SIZE_OBJ, RODATA_PLUS_TEXT, true);
+      sprintf(title,"Obj Size analysis on RODATA + TEXT Section versus First");
+      sprintf(sheet_name,"Text_Rodata_Size_Evolution");
+      create_computed_page(rootdata, sheet_name, title, data_name, 1,SIZE_OBJ,RODATA_PLUS_TEXT, true);
+    }
+    if (disc == SPEED) {
+      create_data_page(rootdata, "Speed_Evol_Data", "Speed Data", disc, LAST_SECTION, true);
+      create_computed_page(rootdata, "Speed_Evolution", "Speed Analysis", "Speed_Evol_Data", 1,disc,LAST_SECTION, true);
+    }
+    
+    if (disc == SPEED_Vs_ARM) {
+      create_data_page(rootdata, "Speed_Evol_Data_Arm", "Speed Data with ARM", disc, LAST_SECTION, true);
+      create_computed_page(rootdata, "Speed_Vs_Arm", "Speed Analysis Versus Arm", "Speed_Evol_Data_Arm", 1,disc,LAST_SECTION, true);
+      
+    }
+}
 
 void Excel_Output::create_page(RootDataClass& rootdata, int disc, Section sec) {
   if(rootdata.get_nb_max_data()==0) return;
@@ -527,18 +608,19 @@ void Excel_Output::create_page(RootDataClass& rootdata, int disc, Section sec) {
     if(disc == SIZE_BIN)strcat(name,"_Bin");
     sprintf(data_name,"Size_Data_%s",name);
     sprintf(title,"Size Datas on %s Section",name);
-    create_data_page(rootdata, data_name, title, disc, sec);
+    create_data_page(rootdata, data_name, title, disc, sec, false);
+    
     sprintf(title,"Size analysis on %s Section versus Previous",name);
     sprintf(sheet_name,"Size_%s_Vs_Prev",name);
-    create_computed_page(rootdata, sheet_name, title, data_name, 2,disc,sec);
+    create_computed_page(rootdata, sheet_name, title, data_name, 2,disc,sec, false);
  
     sprintf(title,"Size analysis on %s Section versus Any",name);
     sprintf(sheet_name,"Size_%s_Vs_Any",name);
-    create_computed_page(rootdata, sheet_name, title, data_name, 3,disc,sec);
+    create_computed_page(rootdata, sheet_name, title, data_name, 3,disc,sec, false);
   } else {
-	create_data_page(rootdata, "Cycles_Data", "Cycles Datas", disc, sec);
-    create_computed_page(rootdata, "Cycles_Vs_Prev", "Speed analysis Versus previous", "Cycles_Data", 2,disc,sec);
-    create_computed_page(rootdata, "Cycles_Vs_Any", "Speed analysis Versus Any", "Cycles_Data", 3,disc,sec);
+	create_data_page(rootdata, "Cycles_Data", "Cycles Datas", disc, sec, false);
+    create_computed_page(rootdata, "Cycles_Vs_Prev", "Speed analysis Versus previous", "Cycles_Data", 2,disc,sec, false);
+    create_computed_page(rootdata, "Cycles_Vs_Any", "Speed analysis Versus Any", "Cycles_Data", 3,disc,sec, false);
     
   }
   
@@ -556,11 +638,15 @@ void Excel_Output::dump_sumary_element(char *title, char *data_page, char *data_
   end_row();
 }
 
-void Excel_Output::dump_cycle_summary_value(SummaryClass& summary, Dump_Type type) {
+void Excel_Output::dump_cycle_summary_value(Dump_Type type) {
 	SummaryElem *base, *compare;
 	base = *(summary.get_list_elem())->rbegin();
 	ForEachRPt(summary.get_list_elem(),iter_elem) {
 		compare = *iter_elem;
+		if(base==compare) {
+		    number_cell(1);
+		    continue;
+		}
 		if (compare->get_cycles(type)->empty()) number_cell(0);
 		else {
 			typeof(base->get_cycles(type)->begin()) vb,vc;
@@ -574,7 +660,8 @@ void Excel_Output::dump_cycle_summary_value(SummaryClass& summary, Dump_Type typ
 			}
 			if(nb_data) {
 				geomean=exp(geomean/nb_data); 
-				number_cell(geomean);
+				if (Monitoring) number_cell(PERCENT_STYL_ID,geomean);
+				else number_cell(geomean);
 			} else {
 				number_cell(0);
 			}
@@ -583,7 +670,7 @@ void Excel_Output::dump_cycle_summary_value(SummaryClass& summary, Dump_Type typ
 }
 
 
-void Excel_Output::dump_size_summary_value(SummaryClass& summary, Dump_Type type, bool is_obj) {
+void Excel_Output::dump_size_summary_value(Dump_Type type, bool is_obj) {
 	SummaryElem *base, *compare;
 	base = *(summary.get_list_elem())->rbegin();
 	ForEachRPt(summary.get_list_elem(),iter_elem) {
@@ -600,7 +687,8 @@ void Excel_Output::dump_size_summary_value(SummaryClass& summary, Dump_Type type
 			}
 			if(nb_data) {
 				double moy = sumc/sumb;
-				number_cell(moy);
+				if (Monitoring) number_cell(PERCENT_STYL_ID,moy);
+				else number_cell(moy);
 			}else{
 				number_cell(0);
 			}
@@ -608,7 +696,7 @@ void Excel_Output::dump_size_summary_value(SummaryClass& summary, Dump_Type type
 	}
 }
 
-void Excel_Output::create_summary_ver2(RootDataClass& rootdata, int size[],	bool obj, int obj_data, bool bin, int bin_data, bool cycle,	int cycle_data, SummaryClass& summary) {
+void Excel_Output::create_summary_ver2(RootDataClass& rootdata, int size[],	bool obj, int obj_data, bool bin, int bin_data, bool cycle,	int cycle_data) {
 	//  char data_page[128]; 
 	//  char data_page_comp[128]; 
 	fprintf(_file, "<Worksheet ss:Name=\"Summary_v2\">\n");
@@ -635,27 +723,27 @@ void Excel_Output::create_summary_ver2(RootDataClass& rootdata, int size[],	bool
 	end_row();
 	start_row();
 	string_cell("Developer Validation suite");
-	dump_cycle_summary_value(summary, Run_Valid);
+	dump_cycle_summary_value(Run_Valid);
 	end_row();
 	start_row();
 	string_cell("EEMBC Networking");
-	dump_cycle_summary_value(summary, EEMBC_Net);
+	dump_cycle_summary_value(EEMBC_Net);
 	end_row();
 	start_row();
 	string_cell("EEMBC Consumer");
-	dump_cycle_summary_value(summary, EEMBC_Cons);
+	dump_cycle_summary_value(EEMBC_Cons);
 	end_row();
 //	start_row();
 //	string_cell("Bluetooth");
-//	dump_cycle_summary_value(summary, Bluetooth);
+//	dump_cycle_summary_value(Bluetooth);
 //	end_row();
 	start_row();
 	string_cell("CSD audio benchmarks");
-	dump_cycle_summary_value(summary, Audio_CSD);
+	dump_cycle_summary_value(Audio_CSD);
 	end_row();
 	start_row();
 	string_cell("JPEG code");
-	dump_cycle_summary_value(summary, Jpeg);
+	dump_cycle_summary_value(Jpeg);
 	end_row();
 	
 	start_row();
@@ -670,27 +758,27 @@ void Excel_Output::create_summary_ver2(RootDataClass& rootdata, int size[],	bool
 	end_row();
 	start_row();
 	string_cell("Developer Validation suite");
-	dump_size_summary_value(summary, Run_Valid, true);
+	dump_size_summary_value(Run_Valid, true);
 	end_row();
 	start_row();
 	string_cell("EEMBC Networking");
-	dump_size_summary_value(summary, EEMBC_Net, true);
+	dump_size_summary_value(EEMBC_Net, true);
 	end_row();
 	start_row();
 	string_cell("EEMBC Consumer");
-	dump_size_summary_value(summary, EEMBC_Cons, true);
+	dump_size_summary_value(EEMBC_Cons, true);
 	end_row();
 	start_row();
 	string_cell("Bluetooth");
-	dump_size_summary_value(summary, Bluetooth, true);
+	dump_size_summary_value(Bluetooth, true);
 	end_row();
 	start_row();
 	string_cell("CSD audio benchmarks");
-	dump_size_summary_value(summary, Audio_CSD, true);
+	dump_size_summary_value(Audio_CSD, true);
 	end_row();
 	start_row();
 	string_cell("JPEG code");
-	dump_size_summary_value(summary, Jpeg, true);
+	dump_size_summary_value(Jpeg, true);
 	end_row();
 
 	start_row();
@@ -705,27 +793,27 @@ void Excel_Output::create_summary_ver2(RootDataClass& rootdata, int size[],	bool
 	end_row();
 	start_row();
 	string_cell("Developer Validation suite");
-	dump_size_summary_value(summary, Run_Valid, false);
+	dump_size_summary_value(Run_Valid, false);
 	end_row();
 	start_row();
 	string_cell("EEMBC Networking");
-	dump_size_summary_value(summary, EEMBC_Net, false);
+	dump_size_summary_value(EEMBC_Net, false);
 	end_row();
 	start_row();
 	string_cell("EEMBC Consumer");
-	dump_size_summary_value(summary, EEMBC_Cons, false);
+	dump_size_summary_value(EEMBC_Cons, false);
 	end_row();
 //	start_row();
 //	string_cell("Bluetooth");
-//	dump_size_summary_value(summary, Bluetooth, false);
+//	dump_size_summary_value(Bluetooth, false);
 //	end_row();
 	start_row();
 	string_cell("CSD audio benchmarks");
-	dump_size_summary_value(summary, Audio_CSD, false);
+	dump_size_summary_value(Audio_CSD, false);
 	end_row();
 	start_row();
 	string_cell("JPEG code");
-	dump_size_summary_value(summary, Jpeg, false);
+	dump_size_summary_value(Jpeg, false);
 	end_row();
 
 	fprintf(_file,	"</Table><WorksheetOptions xmlns=\"urn:schemas-microsoft-com:office:excel\"><Zoom>75</Zoom></WorksheetOptions>\n</Worksheet>\n");

@@ -4,9 +4,26 @@
 #include <stdio.h>
 #include <string.h>
 #include <list>
+#include <map>
+
 extern int warn_level;
 extern bool core_only, ext_only;
 extern bool Cruise_Control;
+extern bool Monitoring;
+
+typedef struct {
+    int size;
+    double cycles;
+    int thumb_size;
+    int thumb_cycles;
+    int iter;
+} TypeVal;
+
+typedef std::map<char*, TypeVal>  CharMap;
+typedef std::map<char*, CharMap> ValTab;
+
+extern ValTab arm_ref_value;
+extern void set_arm_ref_value();
 
 #define ForEachPt(container,iter)						\
   for (typeof(container->begin()) iter = container->begin(); iter != container->end(); ++iter)
@@ -22,6 +39,7 @@ enum {
   SIZE_OBJ,
   SIZE_BIN,
   SPEED,
+  SPEED_Vs_ARM
 };
 
 enum {
@@ -192,7 +210,7 @@ public:
   void add_cycle_count(char *test_name, int number);
   void add_failure(char *name);
   TestList *get_tests(int disc);
-  int get_size(RootTest *tests, Section sec, int disc);
+  int get_size(RootTest *tests, Section sec, int disc, bool monitor);
   int get_cycle(RootTest *tests);
   void ignore_flag(char *flag);
   void ignore_all_flags();
@@ -273,6 +291,8 @@ class  SummaryClass {
   int _nb_elem;
 } ;
 
+extern SummaryClass summary;
+
 
 
 class RootDataClass {
@@ -284,6 +304,7 @@ class RootDataClass {
   void add_session(char *path,char *name);
   SessionList *get_sessions() {return _sessions;}
   void compute_data(int disc);
+  void compute_monitored_data(int disc);
   void remove_ignored_flags(bool no_ignore);
   void add_ignored_flags(char *name) {_ignored_flags->push_back(strdup(name));}
   RootTestList *get_disc() {return _disc_test;}

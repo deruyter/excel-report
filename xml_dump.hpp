@@ -35,8 +35,9 @@ public:
   void generate_header();
   void excel_terminate();
   void create_summary(RootDataClass& rootdata);
-  void create_summary_ver2(RootDataClass& rootdata, int size[], bool obj, int obj_data, bool bin, int bin_data, bool cycle, int cycle_data, SummaryClass& summary);
+  void create_summary_ver2(RootDataClass& rootdata, int size[], bool obj, int obj_data, bool bin, int bin_data, bool cycle, int cycle_data);
   void create_page(RootDataClass& rootdata, int disc, Section sec);
+  void create_monitored_page(RootDataClass& rootdata, int disc);
 private:
   FILE *_file;
   char *_name;
@@ -60,13 +61,14 @@ private:
   void string_comment_bold(char *string);
   void number_cell(int val);
   void number_cell(double val);
+  void number_cell(int style_id,double val);
   void number_cell(int style_id,int val);
   void apply_format(int mode, int session_number, int nb_data);
   char *style(int id);  
-  void dump_size_summary_value(SummaryClass& summary, Dump_Type type, bool is_obj);
-  void dump_cycle_summary_value(SummaryClass& summary, Dump_Type type);
-  void create_data_page(RootDataClass& rootdata,  char *name, char *title, int disc, Section sec);
-  void create_computed_page(RootDataClass& rootdata,  char *name, char *title, char *data_page, int mode, int disc, Section sec);
+  void dump_size_summary_value(Dump_Type type, bool is_obj);
+  void dump_cycle_summary_value(Dump_Type type);
+  void create_data_page(RootDataClass& rootdata,  char *name, char *title, int disc, Section sec, bool monitor);
+  void create_computed_page(RootDataClass& rootdata,  char *name, char *title, char *data_page, int mode, int disc, Section sec, bool monitor);
   void dump_sumary_element(char *title, char *data_page, char *data_page_comp, int nb_data, int nb_sessions, int position);
 };
 #endif

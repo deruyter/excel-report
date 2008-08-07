@@ -1,0 +1,22 @@
+------------------------------------------------------
+               SVNBRANCH CHANGESET
+------------------------------------------------------
+	Date  :    Thu Aug  7 16:06:19 CEST 2008
+	Author:    dt25
+	Parent:    https://codex.cro.st.com/svnroot/stxp70cc/stxp70-report/trunk
+	Branch:    https://codex.cro.st.com/svnroot/stxp70cc/stxp70-report/branches/dt25/dev-monitoring
+
+Description:
+------------
+	* Development for monitoring before OR  
+
+
+Modified Files:
+---------------
+	M      reporting_tool.cpp
+	M      data.cpp
+	M      data.hpp
+	M      xml_dump.cpp
+	M      xml_dump.hpp
+
+
