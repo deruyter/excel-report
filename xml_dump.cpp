@@ -256,21 +256,15 @@ void Excel_Output::create_data_page(RootDataClass& rootdata,  char *name, char *
     start_row();
     string_cell((*iter)->get_test());
     string_cell((*iter)->get_target());
-    if (monitor && disc==SPEED_Vs_ARM && arm_ref_value[(*iter)->get_test()][(*iter)->get_target()].iter > 0) {
-       number_cell(arm_ref_value[(*iter)->get_test()][(*iter)->get_target()].iter);
-    } else {
-        string_cell();
-        ForEachPt((*iter)->get_options(),opt) {
-          string_out(*opt);
-          string_out(" ");
-        }
-        string_cell_end();
+    string_cell();
+    ForEachPt((*iter)->get_options(),opt) {
+      string_out(*opt);
+      string_out(" ");
     }
-    if (monitor && sec==TEXT) number_cell(arm_ref_value[(*iter)->get_test()][(*iter)->get_target()].size);
-    if (monitor && disc==SPEED_Vs_ARM) number_cell(arm_ref_value[(*iter)->get_test()][(*iter)->get_target()].cycles);
+    string_cell_end();
     ForEachPt(rootdata.get_sessions(),iter_session) {
       int val;
-      if (disc!=SPEED && disc!=SPEED_Vs_ARM) val = (*iter_session)->get_size(*iter,sec,disc,monitor);
+      if (disc!=SPEED) val = (*iter_session)->get_size(*iter,sec,disc,monitor);
       else             val = (*iter_session)->get_cycle(*iter);
 	  switch(val) {
 	  case NOT_EXECUTED: string_cell("(not executed)");break;
@@ -312,87 +306,88 @@ void Excel_Output::create_computed_page(RootDataClass& rootdata,  char *name, ch
   }
   end_row();
 
-  // Average
-  start_row(STAT_FIRST_ROW); string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Average");
-  for (i = 0 ; i < nb_sessions_to_dump-1 ; i++) {
-    fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=AVERAGE(R%uC:R%uC)\"></Cell>\n",style(PERCENT_STYL_ID),HEADER_NB_ROWS+1, HEADER_NB_ROWS + rootdata.get_nb_max_data());	        
+      if (disc!=SPEED_Vs_ARM) {
+      // Average
+      start_row(STAT_FIRST_ROW); string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Average");
+      for (i = 0 ; i < nb_sessions_to_dump-1 ; i++) {
+        fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=AVERAGE(R%uC:R%uC)\"></Cell>\n",style(PERCENT_STYL_ID),HEADER_NB_ROWS+1, HEADER_NB_ROWS + rootdata.get_nb_max_data());	        
+      }
+      end_row();
+      // end Average
+    
+      // Geomean
+      start_row(); string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Geomean");
+      for (i = 0 ; i < nb_sessions_to_dump-1 ; i++) {
+        fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=GEOMEAN(R%uC:R%uC)\"></Cell>\n",style(PERCENT_STYL_ID),HEADER_NB_ROWS+1, HEADER_NB_ROWS + rootdata.get_nb_max_data());	        
+      }
+      end_row();
+      // end Geomean
+    
+      // Min
+      start_row(); string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Min");
+      for (i =0  ; i < nb_sessions_to_dump-1 ; i++) {
+        fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=MIN(R%uC:R%uC)\"></Cell>\n",style(PERCENT_STYL_ID),HEADER_NB_ROWS+1, HEADER_NB_ROWS + rootdata.get_nb_max_data());	        
+      }
+      end_row();
+      // end Min
+    
+      // Max
+      start_row();string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Max");
+      for (i = 0 ; i < nb_sessions_to_dump-1 ; i++) {
+        fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=MAX(R%uC:R%uC)\"></Cell>\n",style(PERCENT_STYL_ID),HEADER_NB_ROWS+1, HEADER_NB_ROWS + rootdata.get_nb_max_data());	        
+      }
+      end_row();
+      // end Max
+    
+    
+      // MEDIAN
+      start_row();string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Median");
+      for (i = 0 ; i < nb_sessions_to_dump-1 ; i++) {
+        fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=MEDIAN(R%uC:R%uC)\"></Cell>\n",style(PERCENT_STYL_ID),HEADER_NB_ROWS+1, HEADER_NB_ROWS + rootdata.get_nb_max_data());	        
+      }
+      end_row();
+      // end MEDIAN
+    
+      // Total
+      start_row();string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Total");
+      switch (mode) {
+      case 1:
+        for (j = 0 ; j < nb_sessions_to_dump-1 ; j++) {
+          int i=j;
+          if (monitor && (sec==TEXT||disc==SPEED_Vs_ARM)) i++;
+          fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=sumif(R%dC%d:R%dC%d,&quot;&gt;0&quot;,%s!R%dC%d:%s!R%dC%d)/sumif(%s!R%dC%d:%s!R%dC%d,&quot;&gt;0&quot;,R%dC%d:R%dC%d)\"></Cell>\n",
+    	      style(PERCENT_STYL_ID), 
+    	      HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL, 
+    	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i, 
+    	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i, 
+    	      HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL); 
+        }
+        break;
+      case 2:
+        for (i = 1 ; i < nb_sessions_to_dump ; i++) {
+          fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=sumif(%s!R%dC%d:%s!R%dC%d,&quot;&gt;0&quot;,%s!R%dC%d:%s!R%dC%d)/sumif(%s!R%dC%d:%s!R%dC%d,&quot;&gt;0&quot;,%s!R%dC%d:%s!R%dC%d)\"></Cell>\n",
+    	      style(PERCENT_STYL_ID), 
+    	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i-1, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i-1, 
+    	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i, 
+    	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i, 
+    	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i-1, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i-1); 
+        }
+        break;
+      case 3:
+        for (i = 0 ; i < nb_sessions_to_dump-1 ; i++) {
+          fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=sumif(R%dC%d:R%dC%d,&quot;&gt;0&quot;,%s!R%dC%d:%s!R%dC%d)/sumif(%s!R%dC%d:%s!R%dC%d,&quot;&gt;0&quot;,R%dC%d:R%dC%d)\"></Cell>\n",
+    	      style(PERCENT_STYL_ID), 
+    	      HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL, 
+    	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i, 
+    	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i, 
+    	      HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL); 
+        }
+        break;
+      default :
+        break;
+      }
+      end_row();
   }
-  end_row();
-  // end Average
-
-  // Geomean
-  start_row(); string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Geomean");
-  for (i = 0 ; i < nb_sessions_to_dump-1 ; i++) {
-    fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=GEOMEAN(R%uC:R%uC)\"></Cell>\n",style(PERCENT_STYL_ID),HEADER_NB_ROWS+1, HEADER_NB_ROWS + rootdata.get_nb_max_data());	        
-  }
-  end_row();
-  // end Geomean
-
-  // Min
-  start_row(); string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Min");
-  for (i =0  ; i < nb_sessions_to_dump-1 ; i++) {
-    fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=MIN(R%uC:R%uC)\"></Cell>\n",style(PERCENT_STYL_ID),HEADER_NB_ROWS+1, HEADER_NB_ROWS + rootdata.get_nb_max_data());	        
-  }
-  end_row();
-  // end Min
-
-  // Max
-  start_row();string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Max");
-  for (i = 0 ; i < nb_sessions_to_dump-1 ; i++) {
-    fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=MAX(R%uC:R%uC)\"></Cell>\n",style(PERCENT_STYL_ID),HEADER_NB_ROWS+1, HEADER_NB_ROWS + rootdata.get_nb_max_data());	        
-  }
-  end_row();
-  // end Max
-
-
-  // MEDIAN
-  start_row();string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Median");
-  for (i = 0 ; i < nb_sessions_to_dump-1 ; i++) {
-    fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=MEDIAN(R%uC:R%uC)\"></Cell>\n",style(PERCENT_STYL_ID),HEADER_NB_ROWS+1, HEADER_NB_ROWS + rootdata.get_nb_max_data());	        
-  }
-  end_row();
-  // end MEDIAN
-
-  // Total
-  start_row();string_cell(TABLE_VALUES_FIRST_COL,BOLDCENTER_STYL_ID,"Total");
-  switch (mode) {
-  case 1:
-    for (j = 0 ; j < nb_sessions_to_dump-1 ; j++) {
-      int i=j;
-      if (monitor && (sec==TEXT||disc==SPEED_Vs_ARM)) i++;
-      fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=sumif(R%dC%d:R%dC%d,&quot;&gt;0&quot;,%s!R%dC%d:%s!R%dC%d)/sumif(%s!R%dC%d:%s!R%dC%d,&quot;&gt;0&quot;,R%dC%d:R%dC%d)\"></Cell>\n",
-	      style(PERCENT_STYL_ID), 
-	      HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL, 
-	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i, 
-	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i, 
-	      HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL); 
-    }
-    break;
-  case 2:
-    for (i = 1 ; i < nb_sessions_to_dump ; i++) {
-      fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=sumif(%s!R%dC%d:%s!R%dC%d,&quot;&gt;0&quot;,%s!R%dC%d:%s!R%dC%d)/sumif(%s!R%dC%d:%s!R%dC%d,&quot;&gt;0&quot;,%s!R%dC%d:%s!R%dC%d)\"></Cell>\n",
-	      style(PERCENT_STYL_ID), 
-	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i-1, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i-1, 
-	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i, 
-	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i, 
-	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i-1, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i-1); 
-    }
-    break;
-  case 3:
-    for (i = 0 ; i < nb_sessions_to_dump-1 ; i++) {
-      fprintf(_file,"<Cell ss:StyleID=\"%s\" ss:Formula=\"=sumif(R%dC%d:R%dC%d,&quot;&gt;0&quot;,%s!R%dC%d:%s!R%dC%d)/sumif(%s!R%dC%d:%s!R%dC%d,&quot;&gt;0&quot;,R%dC%d:R%dC%d)\"></Cell>\n",
-	      style(PERCENT_STYL_ID), 
-	      HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL, 
-	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i, 
-	      data_page,HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL+i, data_page, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL+i, 
-	      HEADER_NB_ROWS+1, TABLE_VALUES_FIRST_COL, HEADER_NB_ROWS + rootdata.get_nb_max_data(), TABLE_VALUES_FIRST_COL); 
-    }
-    break;
-  default :
-    break;
-  }
-  end_row();
-
   if (mode==3) {
     nb_sessions_to_dump--;
     start_row(VERS_NUM_FIRST_ROW-1);
@@ -556,8 +551,10 @@ void Excel_Output::create_computed_page(RootDataClass& rootdata,  char *name, ch
   }
   //  fprintf(_file, "</Table><WorksheetOptions xmlns=\"urn:schemas-microsoft-com:office:excel\"><Visible>SheetHidden</Visible><Zoom>75</Zoom></WorksheetOptions>\n");
   fprintf(_file, "</Table><WorksheetOptions xmlns=\"urn:schemas-microsoft-com:office:excel\"><Zoom>75</Zoom></WorksheetOptions>\n");
-  if (mode == 3) apply_format(1, nb_sessions_to_dump+1, nb_max_data);
-  else           apply_format(1, nb_sessions_to_dump, nb_max_data);
+  if (disc != SPEED_Vs_ARM) {
+      if (mode == 3) apply_format(1, nb_sessions_to_dump+1, nb_max_data);
+      else           apply_format(1, nb_sessions_to_dump, nb_max_data);
+  }
   fprintf(_file, "</Worksheet>\n");
 }
 
@@ -614,12 +611,14 @@ void Excel_Output::create_page(RootDataClass& rootdata, int disc, Section sec) {
     sprintf(sheet_name,"Size_%s_Vs_Prev",name);
     create_computed_page(rootdata, sheet_name, title, data_name, 2,disc,sec, false);
  
+    if(rootdata.get_nb_sessions() <= 2) return;
     sprintf(title,"Size analysis on %s Section versus Any",name);
     sprintf(sheet_name,"Size_%s_Vs_Any",name);
     create_computed_page(rootdata, sheet_name, title, data_name, 3,disc,sec, false);
   } else {
 	create_data_page(rootdata, "Cycles_Data", "Cycles Datas", disc, sec, false);
     create_computed_page(rootdata, "Cycles_Vs_Prev", "Speed analysis Versus previous", "Cycles_Data", 2,disc,sec, false);
+    if(rootdata.get_nb_sessions() <= 2) return;
     create_computed_page(rootdata, "Cycles_Vs_Any", "Speed analysis Versus Any", "Cycles_Data", 3,disc,sec, false);
     
   }

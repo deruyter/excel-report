@@ -4,26 +4,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <list>
-#include <map>
 
 extern int warn_level;
 extern bool core_only, ext_only;
 extern bool Cruise_Control;
 extern bool Monitoring;
-
-typedef struct {
-    int size;
-    double cycles;
-    int thumb_size;
-    int thumb_cycles;
-    int iter;
-} TypeVal;
-
-typedef std::map<char*, TypeVal>  CharMap;
-typedef std::map<char*, CharMap> ValTab;
-
-extern ValTab arm_ref_value;
-extern void set_arm_ref_value();
 
 #define ForEachPt(container,iter)						\
   for (typeof(container->begin()) iter = container->begin(); iter != container->end(); ++iter)
@@ -282,7 +267,7 @@ class  SummaryClass {
   SummaryClass();
   ~SummaryClass(void) {};
   void dump_summary();
-  void dump_summary_cc();
+  void dump_summary_cc(char *name);
   void add_session(char *path,char *name);
   void add_summary_value(char *path, char * name, char *tname, int type, int value);
   SummaryElemList *get_list_elem() {return _elem;};

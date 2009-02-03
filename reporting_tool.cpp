@@ -107,10 +107,8 @@ int main(int argc, char* argv[]) {
 	bool cycle = true;
 	bool compare_options = true;
 	bool generate_output_info = true;
-	int size_obj_data=0;
-	int size_bin_data=0;
-	int cycle_data=0;
 	int nb_tst=0;
+	Section section_for_summary=TEXT;
 	Cruise_Control=false;
 	Monitoring=false;
 	NameList *test_names = new NameList;
@@ -178,6 +176,9 @@ int main(int argc, char* argv[]) {
 			Debug_on=true;
 		} else if (!strcmp((*argv), "-cruisec")) {
 			Cruise_Control=true;
+            warn_level=0;
+            compare_options=false;
+            size[TEXT]=1;
         } else if (!strcmp((*argv), "-monitor")) {
             Monitoring=true;
             generate_output_info=false;
@@ -191,7 +192,13 @@ int main(int argc, char* argv[]) {
         } else if (!strcmp((*argv), "-default")) {
             warn_level=0;
             compare_options=false;
+            size[TEXT]=1;
+            ref_file=strdup("References.txt");         
+        } else if (!strcmp((*argv), "-nightly")) {
+            warn_level=0;
+            compare_options=false;
             size[RODATA_PLUS_TEXT]=1;
+			section_for_summary=RODATA_PLUS_TEXT;
             ref_file=strdup("References.txt");         
         } else {
 			test_names->push_back(strdup(*argv));
@@ -252,9 +259,15 @@ int main(int argc, char* argv[]) {
 		sprintf(tmp_name,"%s/SUBTESTS",current_session->get_path());
 		FILE *my_tmp_file = fopen(tmp_name, "r");
 		if (!my_tmp_file) {
-			sprintf(filename,"%s/INFO",current_session->get_path());
-			if (Debug_on) printf("Parse INFO : %s, %d\n",filename,__LINE__);
-			parse_info(filename);
+			sprintf(filename,"%s/BANNER",current_session->get_path());
+			if (fopen(filename,"r")) {   
+			    if (Debug_on) printf("Parse BANNER : %s, %d\n",filename,__LINE__);
+			    parse_info(filename);
+			} else {
+			    sprintf(filename,"%s/INFO",current_session->get_path());
+			    if (Debug_on) printf("Parse INFO : %s, %d\n",filename,__LINE__);
+			    parse_info(filename);
+			}
 			sprintf(filename,"%s/FAILED",current_session->get_path());
 			if (Debug_on) printf("Parse FAIL : %s, %d\n",filename,__LINE__);
 			parse_fail(filename);
@@ -326,39 +339,34 @@ int main(int argc, char* argv[]) {
 	/* For a better summary*/
     if (obj_size||Monitoring) {
     	rootdata.compute_data(SIZE_OBJ);
-    	size_obj_data = rootdata.get_nb_max_data();
 		ForEachPt(rootdata.get_disc(),iter) {
 			ForEachPt(rootdata.get_sessions(),iter_session) {
-				summary.add_summary_value((*iter_session)->get_path(),(*iter_session)->get_name(),(*iter)->get_test(),SIZE_OBJ,(*iter_session)->get_size(*iter,RODATA_PLUS_TEXT,SIZE_OBJ,false));
+				summary.add_summary_value((*iter_session)->get_path(),(*iter_session)->get_name(),(*iter)->get_test(),SIZE_OBJ,(*iter_session)->get_size(*iter,section_for_summary,SIZE_OBJ,false));
 			}
 		}
 	}
     if (bin_size||Monitoring) {
     	rootdata.compute_data(SIZE_BIN);
-    	size_bin_data = rootdata.get_nb_max_data();
 		ForEachPt(rootdata.get_disc(),iter) {
 			ForEachPt(rootdata.get_sessions(),iter_session) {
-				summary.add_summary_value((*iter_session)->get_path(),(*iter_session)->get_name(),(*iter)->get_test(),SIZE_BIN,(*iter_session)->get_size(*iter,RODATA_PLUS_TEXT,SIZE_BIN,false));
+				summary.add_summary_value((*iter_session)->get_path(),(*iter_session)->get_name(),(*iter)->get_test(),SIZE_BIN,(*iter_session)->get_size(*iter,section_for_summary,SIZE_BIN,false));
 			}
 		}
     }
     if (cycle||Monitoring) {
     	rootdata.compute_data(SPEED);
-    	cycle_data = rootdata.get_nb_max_data();
 		ForEachPt(rootdata.get_disc(),iter) {
 			ForEachPt(rootdata.get_sessions(),iter_session) {
 				summary.add_summary_value((*iter_session)->get_path(),(*iter_session)->get_name(),(*iter)->get_test(),SPEED,(*iter_session)->get_cycle(*iter));
 			}
 		}
     }
-    if (false) {
-        output->create_summary_ver2(rootdata, &size[0], obj_size, size_obj_data, bin_size, size_bin_data, cycle, cycle_data);
-    }
+
 	/* End Summary session*/
 
 	/*Monitoring Session*/
 	if (Monitoring) {
-	    set_arm_ref_value();
+	    // Parse set_arm_ref_value();
         rootdata.compute_monitored_data(SIZE_OBJ);
         output->create_monitored_page(rootdata, SIZE_OBJ);
         rootdata.compute_monitored_data(SIZE_BIN);
@@ -390,15 +398,17 @@ int main(int argc, char* argv[]) {
 		output->create_page(rootdata, SPEED, LAST_SECTION);
 	}
 
-	//  ForEachPt(rootdata.get_sessions(),iter_session) {
-	//    (*iter_session)->dump_info();
-	//  }
 
 	output->excel_terminate();
 
-	if (generate_output_info)
-		if(Cruise_Control) summary.dump_summary_cc();
+	if (generate_output_info) {
+    	if(Cruise_Control) {
+    	    if(strstr(ref_file,"branch")!=NULL)    summary.dump_summary_cc("branch");
+    	    else                                   summary.dump_summary_cc("ref");
+    	}
 		else summary.dump_summary();
+	}
+
 	return 0;
 }
 

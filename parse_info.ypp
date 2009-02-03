@@ -80,6 +80,7 @@ sim_name_list :
 mode :
 	FL_MODE FL_NAME
 	{current_session->set_support_mode($2);}
+	|
 ;
 
 logdir :

@@ -67,15 +67,10 @@ CFILES =  $(CYACC1) $(CLEX1) $(CYACC2) $(CLEX2) $(CYACC3) $(CLEX3) $(CYACC4) $(C
 
 ALL_OBJS = $(patsubst %.cpp,%.o,$(notdir $(CFILES)))
 
-PGM := $(BIN_DIR)/report$(EXTENSION)
+PGM := $(BIN_DIR)/sqa_report$(EXTENSION)
 
 all:    $(PGM)
 
-install: clean $(PGM)
-	\cp $(PGM) /project/bilbocc/bilbocc/bin
-
-install_loc: clean $(PGM)
-	\cp $(PGM) /project/bilbocc/users/dt25/bilbo_bin
 
 $(PGM): lex $(ALL_OBJS)
 	${CC} $(CCFLAGS) $(CFLAGS) -I $(SRC_DIR) -o $@ $(ALL_OBJS)

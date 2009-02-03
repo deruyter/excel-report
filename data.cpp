@@ -3,287 +3,7 @@
 
 
 static char *compute_test_target_name(char *name, char **target);
-ValTab arm_ref_value;
-
-
-
-void RootDataClass::compute_monitored_data(int disc) {
-  cleanup_test_disc();
-  ForEachPt(_sessions,session) {
-      
-      if (disc == SIZE_BIN || disc == SPEED) add_test_disc("jpeg_csd","JPEG Decoder CSD", (*session)->get_cc_flags());
-
-      add_test_disc("audio_csd","Huffman decoding", (*session)->get_cc_flags());
-      add_test_disc("audio_csd","IDCT", (*session)->get_cc_flags());
-      add_test_disc("audio_csd","IFFT", (*session)->get_cc_flags());
-      add_test_disc("audio_csd","IIR", (*session)->get_cc_flags());
-      add_test_disc("audio_csd","SRC", (*session)->get_cc_flags());
-
-      if (disc==SIZE_BIN)  
-          add_test_disc("eembc_consumer","empty", (*session)->get_cc_flags());
-      if (disc==SPEED || disc==SPEED_Vs_ARM || disc==SIZE_BIN) {
-          add_test_disc("eembc_consumer","rgbyiq01", (*session)->get_cc_flags());
-          add_test_disc("eembc_consumer","rgbhpg01", (*session)->get_cc_flags());
-          add_test_disc("eembc_consumer","rgbcmy01", (*session)->get_cc_flags());
-          add_test_disc("eembc_consumer","djpeg", (*session)->get_cc_flags());
-          add_test_disc("eembc_consumer","cjpeg", (*session)->get_cc_flags());
-//          add_test_disc("eembc_consumer","Total", (*session)->get_cc_flags());
-      }
-      
-      if(disc!=SPEED && disc!=SPEED_Vs_ARM) 
-          add_test_disc("eembc_networking","empty", (*session)->get_cc_flags());
-      add_test_disc("eembc_networking","ip_pktcheckb1m", (*session)->get_cc_flags());
-      add_test_disc("eembc_networking","ip_pktcheckb2m", (*session)->get_cc_flags());
-      add_test_disc("eembc_networking","ip_pktcheckb4m", (*session)->get_cc_flags());
-      add_test_disc("eembc_networking","ip_pktcheckb512k", (*session)->get_cc_flags());
-      if(disc==SPEED ||  disc==SPEED_Vs_ARM)
-          add_test_disc("eembc_networking","ip_reassemblyIT", (*session)->get_cc_flags());
-      add_test_disc("eembc_networking","ip_reassembly", (*session)->get_cc_flags());
-      if(disc==SPEED ||  disc==SPEED_Vs_ARM)      
-          add_test_disc("eembc_networking","natIT", (*session)->get_cc_flags());
-      add_test_disc("eembc_networking","nat", (*session)->get_cc_flags());
-      add_test_disc("eembc_networking","ospfv2", (*session)->get_cc_flags());
-      add_test_disc("eembc_networking","qos", (*session)->get_cc_flags());
-      add_test_disc("eembc_networking","routelookup", (*session)->get_cc_flags());
-      add_test_disc("eembc_networking","tcpbulk", (*session)->get_cc_flags());
-      add_test_disc("eembc_networking","tcpjumbo", (*session)->get_cc_flags());
-      add_test_disc("eembc_networking","tcpmixed", (*session)->get_cc_flags());
-//      add_test_disc("eembc_networking","Total", (*session)->get_cc_flags());
-
-      if (disc==SIZE_BIN) {
-          add_test_disc("eembc_automotive","empty", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","ttsprk01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","tblook01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","rspeed01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","puwmod01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","pntrch01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","matrix01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","iirflt01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","idctrn01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","canrdr01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","cacheb01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","bitmnp01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","basefp01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","aiifft01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","aifirf01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","aifftr01", (*session)->get_cc_flags());
-          add_test_disc("eembc_automotive","a2time01", (*session)->get_cc_flags());
-//          add_test_disc("eembc_automotive","Total", (*session)->get_cc_flags());
-    
-          add_test_disc("eembc_telecom","empty", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","autcor00data_1", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","autcor00data_2", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","autcor00data_3", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","conven00data_1", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","conven00data_2", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","conven00data_3", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","fbital00data_2", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","fbital00data_3", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","fbital00data_6", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","fft00data_1", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","fft00data_2", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","fft00data_3", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","viterb00data_1", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","viterb00data_2", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","viterb00data_3", (*session)->get_cc_flags());
-          add_test_disc("eembc_telecom","viterb00data_4", (*session)->get_cc_flags());
- //         add_test_disc("eembc_telecom","Total", (*session)->get_cc_flags());
-      }
-      
-      if(disc!=SPEED && disc!=SPEED_Vs_ARM) {
-          add_test_disc("bluetooth","bluetooth", (*session)->get_cc_flags());
-      }
-  }
-}
-
-static void set_arm_ref_size() {
-    arm_ref_value["jpeg_csd"]["JPEG Decoder CSD"].size          = 0;
-
-    arm_ref_value["bluetooth"]["bluetooth"].size        = 383376;
-    
-    arm_ref_value["audio_csd"]["Huffman decoding"].size = 652;
-    arm_ref_value["audio_csd"]["IDCT"].size             = 1536;
-    arm_ref_value["audio_csd"]["IFFT"].size             = 772;
-    arm_ref_value["audio_csd"]["IIR"].size              = 252;
-    arm_ref_value["audio_csd"]["SRC"].size              = 772;
-    
-    arm_ref_value["eembc_automotive"]["empty"].size     = 0;
-    arm_ref_value["eembc_automotive"]["ttsprk01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["tblook01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["rspeed01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["puwmod01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["pntrch01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["matrix01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["iirflt01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["idctrn01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["canrdr01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["cacheb01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["bitmnp01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["basefp01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["aiifft01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["aifirf01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["a2time01"].size  = 0;
-    arm_ref_value["eembc_automotive"]["Total"].size  = 0;
-    
-    arm_ref_value["eembc_consumer"]["empty"].size   = 0;
-    arm_ref_value["eembc_consumer"]["rgbyiq01"].size= 0;
-    arm_ref_value["eembc_consumer"]["rgbhpg01"].size= 0;
-    arm_ref_value["eembc_consumer"]["rgbcmy01"].size= 0;
-    arm_ref_value["eembc_consumer"]["djpeg"].size   = 0;
-    arm_ref_value["eembc_consumer"]["cjpeg"].size   = 0;
-    arm_ref_value["eembc_consumer"]["Total"].size   = 
-        arm_ref_value["eembc_consumer"]["empty"].size +
-        arm_ref_value["eembc_consumer"]["rgbyiq01"].size +
-        arm_ref_value["eembc_consumer"]["rgbhpg01"].size +
-        arm_ref_value["eembc_consumer"]["rgbcmy01"].size +
-        arm_ref_value["eembc_consumer"]["djpeg"].size   +
-        arm_ref_value["eembc_consumer"]["cjpeg"].size   ;
-
-    arm_ref_value["eembc_networking"]["empty"].size             = 160;
-    arm_ref_value["eembc_networking"]["ip_pktcheckb512k"].size  = 2476;
-    arm_ref_value["eembc_networking"]["ip_pktcheckb1m"].size    = 2476;
-    arm_ref_value["eembc_networking"]["ip_pktcheckb2m"].size    = 2472;
-    arm_ref_value["eembc_networking"]["ip_pktcheckb4m"].size    = 2488;
-    arm_ref_value["eembc_networking"]["ip_reassembly"].size     = 4856;
-    arm_ref_value["eembc_networking"]["nat"].size               = 20700;
-    arm_ref_value["eembc_networking"]["ospfv2"].size            = 1600;
-    arm_ref_value["eembc_networking"]["qos"].size               = 18464;
-    arm_ref_value["eembc_networking"]["routelookup"].size       = 1752;
-    arm_ref_value["eembc_networking"]["tcpbulk"].size           = 8620;
-    arm_ref_value["eembc_networking"]["tcpjumbo"].size          = 8620;
-    arm_ref_value["eembc_networking"]["tcpmixed"].size          = 8620;
-    arm_ref_value["eembc_networking"]["Total"].size          = 
-        arm_ref_value["eembc_networking"]["empty"].size             +
-        arm_ref_value["eembc_networking"]["ip_pktcheckb512k"].size  +
-        arm_ref_value["eembc_networking"]["ip_pktcheckb1m"].size    +
-        arm_ref_value["eembc_networking"]["ip_pktcheckb2m"].size    +
-        arm_ref_value["eembc_networking"]["ip_pktcheckb4m"].size    +
-        arm_ref_value["eembc_networking"]["ip_reassembly"].size     +
-        arm_ref_value["eembc_networking"]["nat"].size               +
-        arm_ref_value["eembc_networking"]["ospfv2"].size            +
-        arm_ref_value["eembc_networking"]["qos"].size               +
-        arm_ref_value["eembc_networking"]["routelookup"].size       +
-        arm_ref_value["eembc_networking"]["tcpbulk"].size           +
-        arm_ref_value["eembc_networking"]["tcpjumbo"].size          +
-        arm_ref_value["eembc_networking"]["tcpmixed"].size ;
-
-    arm_ref_value["eembc_telecom"]["empty"].size            = 0;
-    arm_ref_value["eembc_telecom"]["autcor00data_1"].size   = 0;
-    arm_ref_value["eembc_telecom"]["autcor00data_2"].size   = 0;
-    arm_ref_value["eembc_telecom"]["autcor00data_3"].size   = 0;
-    arm_ref_value["eembc_telecom"]["conven00data_1"].size   = 0;
-    arm_ref_value["eembc_telecom"]["conven00data_2"].size   = 0;
-    arm_ref_value["eembc_telecom"]["conven00data_3"].size   = 0;
-    arm_ref_value["eembc_telecom"]["fbital00data_2"].size   = 0;
-    arm_ref_value["eembc_telecom"]["fbital00data_3"].size   = 0;
-    arm_ref_value["eembc_telecom"]["fbital00data_6"].size   = 0;
-    arm_ref_value["eembc_telecom"]["fft00data_1"].size      = 0;
-    arm_ref_value["eembc_telecom"]["fft00data_2"].size      = 0;
-    arm_ref_value["eembc_telecom"]["fft00data_3"].size      = 0;
-    arm_ref_value["eembc_telecom"]["viterb00data_1"].size   = 0;
-    arm_ref_value["eembc_telecom"]["viterb00data_2"].size   = 0;
-    arm_ref_value["eembc_telecom"]["viterb00data_3"].size   = 0;
-    arm_ref_value["eembc_telecom"]["viterb00data_4"].size   = 0;
-}
-
-
-
-static void set_arm_ref_cycles() {
-    arm_ref_value["jpeg_csd"]["JPEG Decoder CSD"].cycles        = 0;
-
-    arm_ref_value["bluetooth"]["bluetooth"].cycles       = 0;
-    
-    arm_ref_value["audio_csd"]["Huffman decoding"].cycles   = 26015;
-    arm_ref_value["audio_csd"]["IDCT"].cycles               = 2627;
-    arm_ref_value["audio_csd"]["IFFT"].cycles               = 77372;
-    arm_ref_value["audio_csd"]["IIR"].cycles                = 16200;
-    arm_ref_value["audio_csd"]["SRC"].cycles                = 716145;
-
-    arm_ref_value["eembc_automotive"]["empty"].cycles   = 0;
-    arm_ref_value["eembc_automotive"]["ttsprk01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["tblook01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["rspeed01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["puwmod01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["pntrch01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["matrix01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["iirflt01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["idctrn01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["canrdr01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["cacheb01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["bitmnp01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["basefp01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["aiifft01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["aifirf01"].cycles= 0;
-    arm_ref_value["eembc_automotive"]["a2time01"].cycles= 0;
-    
-    arm_ref_value["eembc_consumer"]["djpeg"].cycles     = 0.024953885220113;
-    arm_ref_value["eembc_consumer"]["cjpeg"].cycles     = 0.020500810192018;
-    arm_ref_value["eembc_consumer"]["rgbyiq01"].cycles  = 0.146300641967217;
-    arm_ref_value["eembc_consumer"]["rgbhpg01"].cycles  = 0.143243901390898;
-    arm_ref_value["eembc_consumer"]["rgbcmy01"].cycles  = 0.194373282226118;
-
-    arm_ref_value["eembc_networking"]["ip_pktcheckb512k"].cycles= 11.410;
-    arm_ref_value["eembc_networking"]["ip_pktcheckb1m"].cycles  = 5.93;
-    arm_ref_value["eembc_networking"]["ip_pktcheckb2m"].cycles  = 3.02;
-    arm_ref_value["eembc_networking"]["ip_pktcheckb4m"].cycles  = 1.51;
-    arm_ref_value["eembc_networking"]["ip_reassemblyIT"].cycles = 4.62;
-    arm_ref_value["eembc_networking"]["ip_reassembly"].cycles   = 1.09;
-    arm_ref_value["eembc_networking"]["natIT"].cycles           = 6.25;
-    arm_ref_value["eembc_networking"]["nat"].cycles             = 1.36;
-    arm_ref_value["eembc_networking"]["ospfv2"].cycles          = 1.580;
-    arm_ref_value["eembc_networking"]["qos"].cycles             = 0.07;
-    arm_ref_value["eembc_networking"]["routelookup"].cycles     = 3.580;
-    arm_ref_value["eembc_networking"]["tcpbulk"].cycles         = 18.36;
-    arm_ref_value["eembc_networking"]["tcpjumbo"].cycles        = 24.69;
-    arm_ref_value["eembc_networking"]["tcpmixed"].cycles        = 10.81;
-
-    arm_ref_value["eembc_telecom"]["empty"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["autcor00data_1"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["autcor00data_2"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["autcor00data_3"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["conven00data_1"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["conven00data_2"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["conven00data_3"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["fbital00data_2"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["fbital00data_3"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["fbital00data_6"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["fft00data_1"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["fft00data_2"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["fft00data_3"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["viterb00data_1"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["viterb00data_2"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["viterb00data_3"].cycles= 0;
-    arm_ref_value["eembc_telecom"]["viterb00data_4"].cycles= 0;
-}
-
-static void set_arm_iter() {
-    arm_ref_value["eembc_consumer"]["rgbyiq01"].iter  = 40;
-    arm_ref_value["eembc_consumer"]["rgbhpg01"].iter  = 40;
-    arm_ref_value["eembc_consumer"]["rgbcmy01"].iter  = 40;
-    arm_ref_value["eembc_consumer"]["djpeg"].iter     = 40;
-    arm_ref_value["eembc_consumer"]["cjpeg"].iter     = 40;
-
-    arm_ref_value["eembc_networking"]["ip_pktcheckb512k"].iter= 100;
-    arm_ref_value["eembc_networking"]["ip_pktcheckb1m"].iter  = 100;
-    arm_ref_value["eembc_networking"]["ip_pktcheckb2m"].iter  = 100;
-    arm_ref_value["eembc_networking"]["ip_pktcheckb4m"].iter  = 100;
-    arm_ref_value["eembc_networking"]["ip_reassemblyIT"].iter = 500;
-    arm_ref_value["eembc_networking"]["ip_reassembly"].iter   = 500;
-    arm_ref_value["eembc_networking"]["natIT"].iter           = 1000;
-    arm_ref_value["eembc_networking"]["nat"].iter             = 1000;
-    arm_ref_value["eembc_networking"]["ospfv2"].iter          = 100;
-    arm_ref_value["eembc_networking"]["qos"].iter             = 100;
-    arm_ref_value["eembc_networking"]["routelookup"].iter     = 100;
-    arm_ref_value["eembc_networking"]["tcpbulk"].iter         = 20000;
-    arm_ref_value["eembc_networking"]["tcpjumbo"].iter        = 30000;
-    arm_ref_value["eembc_networking"]["tcpmixed"].iter        = 10000;
-}
-
-void set_arm_ref_value() {
-    set_arm_ref_size();
-    set_arm_ref_cycles();
-    set_arm_iter();
-}
+static char *compute_size_test_target_name(char *name, char *tname ,char **target);
 
 
 bool is_extension_info(char *name) {
@@ -516,38 +236,30 @@ void TestSession::add_test_name(char *name){
   _bin_size_tests->push_back(new Test(name));
 }
 
-void TestSession::add_test_size(char *test_name, char *target, Section sec, 	int size, int disc) {
+void TestSession::add_test_size(char *test_name, char *target, Section sec, int size, int disc) {
 	Target *mytarget;
-	if (!strcmp(test_name, "mp3-32"))      	sprintf(test_name, "%s", "mp3_32");
-	if (!strcmp(test_name, "mp3-64"))		sprintf(test_name, "%s", "mp3_64");
-	if (!strcmp(test_name, "WB-AMR"))		sprintf(test_name, "%s", "wb_amr");
-    if (!strcmp(test_name, "pstone"))       sprintf(test_name, "%s", "PStone");
-    if (!strcmp(test_name, "fpu_zoom"))     sprintf(test_name, "%s", "FPU_Zoom");
-    if (!strcmp(test_name, "exposurecode")) sprintf(test_name, "%s", "FP_Exposure");
-	//printf("%s, %s\n",test_name,target);
-	Test *current_test=NULL;
+	char *target_name;
+	if(strstr(target, "Perfs_BILBO.o")) return;
+    if(strstr(target, "Verbose.o")) return;
+    if(strstr(target, "Check.o")) return;
+
+    char *local_test_name = compute_size_test_target_name(test_name,target,&target_name);
+  
+    Test *current_test=NULL;
 	ForEachPt(get_tests(disc),iter) {
-		if (!strcmp((*iter)->get_name(),test_name)) {
+		if (!strcmp((*iter)->get_name(),local_test_name)) {
 			current_test=*iter;
 			break;
 		}
 	}
 	if (!current_test) {
-		add_test_name(test_name);
-		add_test_size(test_name, target, sec, size, disc);
+		add_test_name(local_test_name);
+		add_test_size(local_test_name, target_name, sec, size, disc);
 		return;
-		//fprintf(stderr, "ERROR: Test suit %s does not exist !!!\n", test_name);
-		//exit(1);
-	}
-	if (!strncmp(test_name, "eembc_", 6) && !strncmp(target, "bin/", 4)) {
-		char *tmp_targ=strndup(&target[4], strlen(target)-8);
-		free(target);
-		target=tmp_targ;
 	}
 
-	mytarget=current_test->find_target(target);
-	if (!mytarget)
-		mytarget=current_test->add_target(target);
+	mytarget = current_test->find_target(target_name);
+	if (!mytarget) mytarget = current_test->add_target(target_name);
 
 	if (mytarget->get_size(sec)!=0) {
 		// if(warn_level) fprintf(stderr,"WARNING: Size value for test %s target %s section %s already given, skipped\n",test_name,target,section_name(sec));
@@ -853,6 +565,26 @@ void RootDataClass::compute_data(int disc) {
 }
 
 
+/* Here we only add tests from ARM ref file :
+ * - Audio_peech
+ * - EEMBC
+ * - JPEG CSD
+ * - bluetooth
+ */
+void RootDataClass::compute_monitored_data(int disc) {
+    cleanup_test_disc();
+    TestSession *session = *(_sessions->begin());
+    ForEachPt(session->get_tests(disc),test) {
+        ForEachPt((*test)->get_target(),target) {
+            add_test_disc((*test)->get_name(),(*target)->get_name(), session->get_cc_flags());
+            //  printf("DISC: %s, %s\n",(*test)->get_name(),(*target)->get_name());
+        }
+    }
+}
+
+
+
+
 /*****************************************/
 /*               Summary                 */
 /*****************************************/
@@ -1017,18 +749,15 @@ static bool is_trunk(char *name) {
 	return (strstr(name,"trunk") != NULL);
 }
 
-void SummaryClass::dump_summary_cc() {
+void SummaryClass::dump_summary_cc(char *name) {
 	SummaryElem *base, *compare;
 	std::_List_iterator<SummaryElem*, SummaryElem*&, SummaryElem**> iter=_elem->begin();
-	//On Cruise_control, we compare base Vs previous and base Vs last to obtain :
-	//		Test Vs Previous in the same branch
-	//		Test Vs Trunk last rebase
 	base = *iter;
 	iter++;
 	compare = *iter;
 	iter++;
-	fprintf(stdout,"<property name=\"%s_prev_compiler\" value=\"%s\"/>\n",base->get_name(),get_version_num(compare->get_cc_name()));
-	fprintf(stdout,"<property name=\"%s_prev_cycles\" value=\"",base->get_name());
+	fprintf(stdout,"<property name=\"%s_%s_compiler\" value=\"%s\"/>\n",base->get_name(),name,get_version_num(compare->get_cc_name()));
+	fprintf(stdout,"<property name=\"%s_%s_cycles\" value=\"",base->get_name(),name);
 	if (compare->get_cycles(Run_Valid)->empty()) fprintf(stdout," Max Gain: N/A, Max loss:  N/A, Geomean: N/A");
 	else {
 		typeof(base->get_cycles(Run_Valid)->begin()) vb,vc;
@@ -1049,7 +778,7 @@ void SummaryClass::dump_summary_cc() {
 		sprintf(moyst,"%4.4f",moy*100.00);
 		fprintf(stdout," Max Gain: %5.5s, Max Loss: %5.5s, Geomean: %5.5s",minst,maxst,moyst);
 	}
-	fprintf(stdout,"\" />\n<property name=\"%s_prev_obj_size\" value=\"",base->get_name());
+	fprintf(stdout,"\" />\n<property name=\"%s_%s_obj_size\" value=\"",base->get_name(),name);
 	if (compare->get_size(Run_Valid,true)->empty()) fprintf(stdout," Max Gain: N/A, Max loss:  N/A, Average: N/A");
 	else {
 		typeof(base->get_size(Run_Valid,true)->begin()) vb,vc;
@@ -1070,7 +799,7 @@ void SummaryClass::dump_summary_cc() {
 		sprintf(moyst,"%4.4f",moy*100.00);
 		fprintf(stdout," Max Gain: %5.5s, Max Loss: %5.5s, Average: %5.5s",minst,maxst,moyst);
 	}
-	fprintf(stdout,"\" />\n<property name=\"%s_prev_bin_size\" value=\"",base->get_name());
+	fprintf(stdout,"\" />\n<property name=\"%s_%s_bin_size\" value=\"",base->get_name(),name);
 	if (compare->get_size(Run_Valid,false)->empty()) fprintf(stdout," Max Gain: N/A, Max loss:  N/A, Average: N/A");
 	else {
 		typeof(base->get_size(Run_Valid,false)->begin()) vb,vc;
@@ -1097,75 +826,9 @@ void SummaryClass::dump_summary_cc() {
 		iter=_elem->end();
 		iter--;
 		compare=*iter;
-		if (!is_trunk(compare->get_cc_name())) return;
 	} else {
 		return;
 	}
-	fprintf(stdout,"<property name=\"%s_trunk_compiler\" value=\"%s\"/>\n",base->get_name(),get_version_num(compare->get_cc_name()));
-	fprintf(stdout,"<property name=\"%s_trunk_cycles\" value=\"",base->get_name());
-	if (compare->get_cycles(Run_Valid)->empty()) fprintf(stdout," Max Gain: N/A, Max loss:  N/A, Geomean: N/A");
-	else {
-		typeof(base->get_cycles(Run_Valid)->begin()) vb,vc;
-		int nb_data=0;;
-		double sumb=0,sumc=0,min=0,max=0,tmp_val;
-		for (vb = base->get_cycles(Run_Valid)->begin(), vc=compare->get_cycles(Run_Valid)->begin(); vb != base->get_cycles(Run_Valid)->end(); ++vb, ++vc) {
-			if (*vb<=-1 || *vc<=-1) continue;
-			nb_data++;
-			sumb+=*vb; sumc+=*vc;
-			tmp_val=double (double (*vb)- double (*vc))/ double (*vc);
-			if (tmp_val> max) max = tmp_val;
-			if (tmp_val < min) min = tmp_val;
-		}
-		double moy = (((sumb/nb_data)-(sumc/nb_data))/(sumc/nb_data));
-		char minst[15],maxst[15],moyst[15];
-		sprintf(minst,"%4.4f",min*100.00);
-		sprintf(maxst,"%4.4f",max*100.00);
-		sprintf(moyst,"%4.4f",moy*100.00);
-		fprintf(stdout," Max Gain: %5.5s, Max Loss: %5.5s, Geomean: %5.5s",minst,maxst,moyst);
-	}
-	fprintf(stdout,"\" />\n<property name=\"%s_trunk_obj_size\" value=\"",base->get_name());
-	if (compare->get_size(Run_Valid,true)->empty()) fprintf(stdout," Max Gain: N/A, Max loss:  N/A, Average: N/A");
-	else {
-		typeof(base->get_size(Run_Valid,true)->begin()) vb,vc;
-		int nb_data=0;;
-		double sumb=0,sumc=0,min=0,max=0,tmp_val;
-		for (vb = base->get_size(Run_Valid,true)->begin(), vc=compare->get_size(Run_Valid,true)->begin(); vb != base->get_size(Run_Valid,true)->end(); ++vb, ++vc) {
-			if (*vb<=-1 || *vc<=-1) continue;
-			nb_data++;
-			sumb+=*vb; sumc+=*vc;
-			tmp_val=double (double (*vb)- double (*vc))/ double (*vc);
-			if (tmp_val> max) max = tmp_val;
-			if (tmp_val < min) min = tmp_val;
-		}
-		double moy = (((sumb/nb_data)-(sumc/nb_data))/(sumc/nb_data));
-		char minst[15],maxst[15],moyst[15];
-		sprintf(minst,"%4.4f",min*100.00);
-		sprintf(maxst,"%4.4f",max*100.00);
-		sprintf(moyst,"%4.4f",moy*100.00);
-		fprintf(stdout," Max Gain: %5.5s, Max Loss: %5.5s, Average: %5.5s",minst,maxst,moyst);
-	}
-	fprintf(stdout,"\" />\n<property name=\"%s_trunk_bin_size\" value=\"",base->get_name());
-	if (compare->get_size(Run_Valid,false)->empty()) fprintf(stdout," Max Gain: N/A, Max loss:  N/A, Average: N/A");
-	else {
-		typeof(base->get_size(Run_Valid,false)->begin()) vb,vc;
-		int nb_data=0;;
-		double sumb=0,sumc=0,min=0,max=0,tmp_val;
-		for (vb = base->get_size(Run_Valid,false)->begin(), vc=compare->get_size(Run_Valid,false)->begin(); vb != base->get_size(Run_Valid,false)->end(); ++vb, ++vc) {
-			if (*vb<=-1 || *vc<=-1) continue;
-			nb_data++;
-			sumb+=*vb; sumc+=*vc;
-			tmp_val=double (double (*vb)- double (*vc))/ double (*vc);
-			if (tmp_val> max) max = tmp_val;
-			if (tmp_val < min) min = tmp_val;
-		}
-		double moy = (((sumb/nb_data)-(sumc/nb_data))/(sumc/nb_data));
-		char minst[15],maxst[15],moyst[15];
-		sprintf(minst,"%4.4f",min*100.00);
-		sprintf(maxst,"%4.4f",max*100.00);
-		sprintf(moyst,"%4.4f",moy*100.00);
-		fprintf(stdout,"Max Gain: %5.5s, Max Loss: %5.5s, Average: %5.5s",minst,maxst,moyst);
-	}
-	fprintf(stdout,"\" />\n");
 }
 
 
@@ -1298,129 +961,58 @@ bool is_same_list(NameList *l1,NameList *l2) {
   return true;
 }
 
-static char *compute_test_target_name(char *name, char **target) {
-  if(!strcmp(name,"des.out") || !strcmp(name,"compress.out") || !strcmp(name,"compress.out") || !strcmp(name,"g3fax.out") || !strcmp(name,"jpeg.out")
-     ||!strcmp(name,"eval2.out") || !strcmp(name,"pocsag.out") || !strcmp(name,"engine.out") || !strcmp(name,"dhry21.out") || !strcmp(name,"summin.out") 
-     ||!strcmp(name,"fir_int.out") || !strcmp(name,"v42bis.out") || !strcmp(name,"auto.out") || !strcmp(name,"ucbqsort.out") || !strcmp(name,"blit.out") 
-     ) {
-    *target=strndup(name,strlen(name)-4);
-    return "pstone";
-  }
-
-  
-  if(!strcmp(name,"JPEG Decoder CSD")) {
-      *target=strdup("JPEG Decoder CSD");
-      return "jpeg_csd";
-  }
-  
-
-  if(!strcmp(name,"Second order IIR")) {
-      *target=strdup("IIR");
-      return "audio_csd";
-  }
-  
-  if(!strcmp(name,"SRC") || !strcmp(name,"IDCT") || !strcmp(name,"Second order IIR") || !strcmp(name,"IFFT") || !strcmp(name,"Huffman decoding")) {
-      *target=strdup(name);
-      return "audio_csd";
-  }
-
-  
-  if(!strncmp(name,"BDTI--",6)) {
-    *target=strdup(&name[6]);
-    return "benchs64 (BDTI)";
-  }
-
-  if(!strncmp(name,"LAO--",5)) {
-    char *tmp = strtok(name," ");
-    *target=strdup(&tmp[5]);
-    return "benchs64 (LAO)";
-  }
-
-  if(!strncmp(name,"Automotive--",12)) {
-    *target=strdup(&name[12]);
-    return "eembc_automotive";
-  }
-
-  if(!strncmp(name,"Telecom--",9)) {
-    *target=strdup(&name[9]);
-    return "eembc_telecom";
-  }
-
-  if(!strncmp(name,"Consumer--",10)) {
-    *target=strdup(&name[10]);
-    return "eembc_consumer";
-  }
-
-  if(!strncmp(name,"Networking--",12)) {
-    *target=strdup(&name[12]);
-    return "eembc_networking";
-  }
-
-  if(!strncmp(name,"fp_aec--",8)) {
-    *target=strdup(&name[8]);
-    return "fp_aec";
-  }
-
-  if(!strncmp(name,"Stanford--",10)) {
-    *target=strdup(&name[10]);
-    return "stanford";
-  }
-
-  if(!strcmp(name,"OUT> Dhrystone")) {
-    *target=strdup("dhrystone");
-    return "dhrystone";
-  }
-
-  if(!strcmp(name,"BaseStation")) {
-    *target=strdup("basestation");
-    return "basestation";
-  }
-
-  if(!strcmp(name,"efr-test22cod")) {
-    *target=strdup("Coder - test22");
-    return "EFR";
-  }
-
-  if(!strcmp(name,"efr-test22dec")) {
-    *target=strdup("Decoder - test22");
-    return "EFR";
-  }
-
-  if(!strcmp(name,"efr-dtx03cod")) {
-    *target=strdup("Coder - dtx03");
-    return "EFR";
-  }
-
-  if(!strcmp(name,"efr-dtx03dec")) {
-    *target=strdup("Decoder - dtx03");
-    return "EFR";
-  }
-
-  if(!strcmp(name,"wb_amrcod")) {
-    *target=strdup("Coder");
-    return "wb_amr";
-  }
-
-  if(!strcmp(name,"wb_amrdec")) {
-    *target=strdup("Decoder");
-    return "wb_amr";
-  }
-
-  if(!strncmp(name,"Konica--",8)) {
-    *target=strdup(&name[8]);
-    return "konica";
-  }
-
-  *target=strdup(name);
-  return name;
+static char *compute_size_test_target_name(char *name, char *tname ,char **target) {
+    char *my_name = NULL;
+    if(!strcmp(name,"eembc_v11.automotive"))         my_name = strdup("eembc_automotive");
+    else if(!strcmp(name,"eembc_v11.consumer"))      my_name = strdup("eembc_consumer");
+    else if (!strcmp(name, "eembc_v20.networking"))  my_name = strdup("eembc_networking");
+    else if (!strcmp(name, "eembc_v11.telecom"))     my_name = strdup("eembc_telecom");
+    else my_name = strdup(name);
+    
+    if (strstr(tname,".u")) *target = strdup(strrchr(tname,'/')+1);
+    else *target = strdup(tname);
+    return my_name;
 }
 
-/*
-exposurecode 
-whetstone-float 
-whetstone-double 
-mp3_32  
-mp3_64 
-stvid 
 
-*/
+static char *compute_test_target_name(char *name, char **target) {
+    char *tmp;
+    char *my_name=strdup(name);
+
+    if(!strncmp(my_name,"eembc_v",7)) {
+         tmp=strstr(my_name,"--");
+         my_name=&tmp[2];
+    }
+
+    if ((tmp=strstr(my_name, "--"))) {
+        *target=strdup(&tmp[2]);
+        *tmp='\0';
+        if (!strcmp(my_name, "LAO-Kernels") && (tmp=strstr(*target, "-"))) {
+            *target=&tmp[1];
+            tmp = strtok(*target, " ");
+            *target=tmp;
+        } else if (!strcmp(my_name, "LAO-Kernels")) {
+            tmp = strtok(*target, " ");
+            *target=tmp;
+        } else if (!strcmp(my_name, "Consumer"))     return "eembc_consumer";
+        else if (!strcmp(my_name, "Networking"))     return "eembc_networking";
+        else if (!strcmp(my_name, "Telecom"))        return "eembc_telecom";
+        else if (!strcmp(my_name, "Automotive"))     return "eembc_automotive";
+        else if (!strcmp(my_name, "QMx_mixer")) {
+            *target=strndup(*target,strlen(*target)-6);
+        }
+        else if ((tmp=strstr(*target, "--"))) {
+            *target=strdup(&tmp[2]);
+        }
+        else if (!strcmp(my_name,"PStone") || !strcmp(my_name,"diagnostics") || !strcmp(my_name,"Audio_speech")) {
+            tmp = strstr(*target,"/");
+            *tmp='\0';
+        }
+        else if (!strncmp(*target,"./src/",6)) *target=&(*target)[6]; 
+        else if (!strncmp(*target,"src/",4)) *target=&(*target)[4]; 
+        return my_name;
+    }
+  *target=strdup(name);
+  return name;
+  
+}
