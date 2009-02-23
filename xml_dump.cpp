@@ -545,7 +545,7 @@ void Excel_Output::create_computed_page(RootDataClass& rootdata,  char *name, ch
       string_cell("Developer Validation suite");
       string_cell("Developer Validation suite");
       string_cell("");
-      dump_size_summary_value(Run_Valid,true);
+      dump_size_summary_value(Run_Valid,disc);
       end_row();
       nb_max_data++;
   }
@@ -577,7 +577,16 @@ void Excel_Output::create_monitored_page(RootDataClass& rootdata, int disc) {
       sprintf(sheet_name,"Text_Rodata_Size_Evolution");
       create_computed_page(rootdata, sheet_name, title, data_name, 1,SIZE_OBJ,RODATA_PLUS_TEXT, true);
     }
-    if (disc == SPEED) {
+/*    if (disc == SIZE_FUNC) {
+      sprintf(title,"Function Size Datas");
+      sprintf(data_name,"Func_Size_Data");
+      create_data_page(rootdata, data_name, title, disc, TEXT, true);
+      sprintf(title,"Function Size analysis on TEXT Section versus First");
+      sprintf(sheet_name,"Func_Size_Vs_Arm");
+      create_computed_page(rootdata, sheet_name, title, data_name, 1,disc,TEXT, true);
+      return;
+    }
+    */if (disc == SPEED) {
       create_data_page(rootdata, "Speed_Evol_Data", "Speed Data", disc, LAST_SECTION, true);
       create_computed_page(rootdata, "Speed_Evolution", "Speed Analysis", "Speed_Evol_Data", 1,disc,LAST_SECTION, true);
     }
@@ -591,7 +600,7 @@ void Excel_Output::create_monitored_page(RootDataClass& rootdata, int disc) {
 
 void Excel_Output::create_page(RootDataClass& rootdata, int disc, Section sec) {
   if(rootdata.get_nb_max_data()==0) return;
-  if (disc == SIZE_OBJ || disc == SIZE_BIN) {
+  if (disc == SIZE_OBJ || disc == SIZE_BIN || disc == SIZE_FUNC ) {
     char name[256],data_name[256],sheet_name[256],title[1024];
     switch (sec) {
     case TEXT :   sprintf(name,"Text"); break;
@@ -603,6 +612,7 @@ void Excel_Output::create_page(RootDataClass& rootdata, int disc, Section sec) {
     }
     if(disc == SIZE_OBJ) strcat(name,"_Obj");
     if(disc == SIZE_BIN)strcat(name,"_Bin");
+    if(disc == SIZE_FUNC)strcat(name,"_Func");
     sprintf(data_name,"Size_Data_%s",name);
     sprintf(title,"Size Datas on %s Section",name);
     create_data_page(rootdata, data_name, title, disc, sec, false);
@@ -669,17 +679,17 @@ void Excel_Output::dump_cycle_summary_value(Dump_Type type) {
 }
 
 
-void Excel_Output::dump_size_summary_value(Dump_Type type, bool is_obj) {
+void Excel_Output::dump_size_summary_value(Dump_Type type, int disc) {
 	SummaryElem *base, *compare;
 	base = *(summary.get_list_elem())->rbegin();
 	ForEachRPt(summary.get_list_elem(),iter_elem) {
 		compare = *iter_elem;
-		if (compare->get_size(type,is_obj)->empty()) number_cell(0);
+		if (compare->get_size(type,disc)->empty()) number_cell(0);
 		else {
-			typeof(base->get_size(type,is_obj)->begin()) vb,vc;
+			typeof(base->get_size(type,disc)->begin()) vb,vc;
 			int nb_data=0;
 			double sumb=0,sumc=0;
-			for (vb = base->get_size(type,is_obj)->begin(), vc=compare->get_size(type,is_obj)->begin(); vb != base->get_size(type,is_obj)->end(); ++vb, ++vc) {
+			for (vb = base->get_size(type,disc)->begin(), vc=compare->get_size(type,disc)->begin(); vb != base->get_size(type,disc)->end(); ++vb, ++vc) {
 				if (*vb<=-1 || *vc<=-1) continue;
 				nb_data++;
 				sumb+=*vb; sumc+=*vc;
@@ -757,27 +767,27 @@ void Excel_Output::create_summary_ver2(RootDataClass& rootdata, int size[],	bool
 	end_row();
 	start_row();
 	string_cell("Developer Validation suite");
-	dump_size_summary_value(Run_Valid, true);
+	dump_size_summary_value(Run_Valid, SIZE_OBJ);
 	end_row();
 	start_row();
 	string_cell("EEMBC Networking");
-	dump_size_summary_value(EEMBC_Net, true);
+	dump_size_summary_value(EEMBC_Net, SIZE_OBJ);
 	end_row();
 	start_row();
 	string_cell("EEMBC Consumer");
-	dump_size_summary_value(EEMBC_Cons, true);
+	dump_size_summary_value(EEMBC_Cons, SIZE_OBJ);
 	end_row();
 	start_row();
 	string_cell("Bluetooth");
-	dump_size_summary_value(Bluetooth, true);
+	dump_size_summary_value(Bluetooth, SIZE_OBJ);
 	end_row();
 	start_row();
 	string_cell("CSD audio benchmarks");
-	dump_size_summary_value(Audio_CSD, true);
+	dump_size_summary_value(Audio_CSD, SIZE_OBJ);
 	end_row();
 	start_row();
 	string_cell("JPEG code");
-	dump_size_summary_value(Jpeg, true);
+	dump_size_summary_value(Jpeg, SIZE_OBJ);
 	end_row();
 
 	start_row();
@@ -792,27 +802,27 @@ void Excel_Output::create_summary_ver2(RootDataClass& rootdata, int size[],	bool
 	end_row();
 	start_row();
 	string_cell("Developer Validation suite");
-	dump_size_summary_value(Run_Valid, false);
+	dump_size_summary_value(Run_Valid, SIZE_BIN);
 	end_row();
 	start_row();
 	string_cell("EEMBC Networking");
-	dump_size_summary_value(EEMBC_Net, false);
+	dump_size_summary_value(EEMBC_Net, SIZE_BIN);
 	end_row();
 	start_row();
 	string_cell("EEMBC Consumer");
-	dump_size_summary_value(EEMBC_Cons, false);
+	dump_size_summary_value(EEMBC_Cons, SIZE_BIN);
 	end_row();
 //	start_row();
 //	string_cell("Bluetooth");
-//	dump_size_summary_value(Bluetooth, false);
+//	dump_size_summary_value(Bluetooth, SIZE_BIN);
 //	end_row();
 	start_row();
 	string_cell("CSD audio benchmarks");
-	dump_size_summary_value(Audio_CSD, false);
+	dump_size_summary_value(Audio_CSD, SIZE_BIN);
 	end_row();
 	start_row();
 	string_cell("JPEG code");
-	dump_size_summary_value(Jpeg, false);
+	dump_size_summary_value(Jpeg, SIZE_BIN);
 	end_row();
 
 	fprintf(_file,	"</Table><WorksheetOptions xmlns=\"urn:schemas-microsoft-com:office:excel\"><Zoom>75</Zoom></WorksheetOptions>\n</Worksheet>\n");

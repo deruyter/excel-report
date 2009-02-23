@@ -65,7 +65,7 @@ private:
   void number_cell(int style_id,int val);
   void apply_format(int mode, int session_number, int nb_data);
   char *style(int id);  
-  void dump_size_summary_value(Dump_Type type, bool is_obj);
+  void dump_size_summary_value(Dump_Type type, int disc);
   void dump_cycle_summary_value(Dump_Type type);
   void create_data_page(RootDataClass& rootdata,  char *name, char *title, int disc, Section sec, bool monitor);
   void create_computed_page(RootDataClass& rootdata,  char *name, char *title, char *data_page, int mode, int disc, Section sec, bool monitor);

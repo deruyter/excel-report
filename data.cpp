@@ -105,6 +105,7 @@ Target *Test::add_target(char *name) {
 TestSession::TestSession(char *path, char *name) {
   _obj_size_tests=new TestList;
   _bin_size_tests=new TestList;
+  _func_size_tests=new TestList;
   _speed_tests=new TestList;
   _compiler_flags=new NameList;
   _simulator_flags=new NameList;
@@ -221,6 +222,20 @@ void TestSession::add_test_name(char *name){
     _bin_size_tests->push_back(new Test("MP1v_viterbi"));
     _bin_size_tests->push_back(new Test("Fx_SampleRate"));
     _bin_size_tests->push_back(new Test("TS4x_test"));
+    
+    _func_size_tests->push_back(new Test("TSTx_test"));
+    _func_size_tests->push_back(new Test("vx2_fgtdec"));
+    _func_size_tests->push_back(new Test("vx2_test_memspace"));
+    _func_size_tests->push_back(new Test("TS3x_test"));
+    _func_size_tests->push_back(new Test("admX_AppliUsingadmX"));
+    _func_size_tests->push_back(new Test("TS2x_test"));
+    _func_size_tests->push_back(new Test("QMx_farrow_interpolator"));
+    _func_size_tests->push_back(new Test("QMx_mixer"));
+    _func_size_tests->push_back(new Test("Tx_CSD_extension_test"));
+    _func_size_tests->push_back(new Test("MP1v_viterbi"));
+    _func_size_tests->push_back(new Test("Fx_SampleRate"));
+    _func_size_tests->push_back(new Test("TS4x_test"));
+    
     return;
   }
 
@@ -229,11 +244,15 @@ void TestSession::add_test_name(char *name){
     _obj_size_tests->push_back(new Test("whetstone-double"));
     _bin_size_tests->push_back(new Test("whetstone-float"));
     _bin_size_tests->push_back(new Test("whetstone-double"));
+    _func_size_tests->push_back(new Test("whetstone-float"));
+    _func_size_tests->push_back(new Test("whetstone-double"));
     return;
   } 
 
   _obj_size_tests->push_back(new Test(name));
   _bin_size_tests->push_back(new Test(name));
+  _func_size_tests->push_back(new Test(name));
+
 }
 
 void TestSession::add_test_size(char *test_name, char *target, Section sec, int size, int disc) {
@@ -242,6 +261,9 @@ void TestSession::add_test_size(char *test_name, char *target, Section sec, int 
 	if(strstr(target, "Perfs_BILBO.o")) return;
     if(strstr(target, "Verbose.o")) return;
     if(strstr(target, "Check.o")) return;
+    if(strncmp("./",target,2) == 0) {
+    	target = &target[2];
+    }
 
     char *local_test_name = compute_size_test_target_name(test_name,target,&target_name);
   
@@ -267,6 +289,73 @@ void TestSession::add_test_size(char *test_name, char *target, Section sec, int 
 	}
 	mytarget->set_size(sec, size);
 }
+
+
+void TestSession::add_test_func_size(char *test_name,char *target,char *object, char *function, int size, bool aggregated) {
+	Target *mytarget;
+	char *target_name;
+	int disc=SIZE_FUNC;
+
+	if(strstr(function, "TH_InitTimer")) return;
+	if(strstr(function, "TH_GetOverhead")) return;
+	if(strstr(function, "TH_end")) return;
+	if(strstr(function, "BENCH_START")) return;
+	if(strstr(function, "BENCH_STOP")) return;
+	if(strstr(function, "BENCH_STATUS")) return;
+	if(strstr(function, "BENCH_INT_MESSAGE")) return;
+	if(strstr(function, "BENCH_FLOAT_MESSAGE")) return;
+	if(strstr(function, "BENCH_STR_MESSAGE")) return;
+	if(strstr(function, "BENCH_CHECK")) return;
+
+	
+    /* PStone;auto/ auto/src/auto.o autom 4550 4194532*/
+    /* PStone;auto/ auto/src/auto.o 4188 autom */
+
+    
+    /* Test Name : <test_name>_<target>
+     * Target :  <function> (<object>)
+     */
+    
+    char *tmp_test_name = compute_size_test_target_name(test_name,object,&target_name);
+    Test *current_test=NULL;
+    if(target[strlen(target)-1] == '/')  target[strlen(target)-1]='\0';
+    char *local_test_name; 
+    if (strncmp(target,"src",3)==0) {
+    	local_test_name=tmp_test_name;
+    } else {
+    	local_test_name=(char *) malloc(strlen(tmp_test_name) + strlen(target) + 5);
+    	sprintf(local_test_name,"%s - %s",tmp_test_name,target);
+    }
+    
+    if (aggregated) {
+	    target_name=(char *) malloc(strlen(function) + 22 );
+	    sprintf(target_name,"%s (Aggregated Object)",function);
+//	    printf("%s, %s\n",local_test_name,target_name);
+    } else {    
+	    target_name=(char *) malloc(strlen(function) + strlen(object) + 5);
+	    sprintf(target_name,"%s (%s)",function,object);
+    }       
+    
+    ForEachPt(get_tests(disc),iter) {
+		if (!strcmp((*iter)->get_name(),local_test_name)) {
+			current_test=*iter;
+			break;
+		}
+	}
+	if (!current_test) {
+		add_test_name(local_test_name);
+		add_test_func_size(test_name,target,object,function,size,aggregated);
+		return;
+	}
+
+
+    mytarget = current_test->find_target(target_name);
+	if (!mytarget) mytarget = current_test->add_target(target_name);
+
+	if (mytarget->get_size(TEXT)!=0 && aggregated) 	return;
+	mytarget->set_size(TEXT, size);
+}
+
 
 char *TestSession::section_name(Section sec) {
   switch(sec){
@@ -469,6 +558,7 @@ void TestSession::add_cycle_count(char *test_name, int number) {
 TestList *TestSession::get_tests(int disc) {
   if (disc == SIZE_OBJ) return _obj_size_tests; 
   if (disc == SIZE_BIN) return _bin_size_tests; 
+  if (disc == SIZE_FUNC) return _func_size_tests;
   if (disc == SPEED) return _speed_tests; 
   return NULL;
 }
@@ -600,6 +690,7 @@ SummaryElem::SummaryElem(char *path,char *name) {
 	_JPEG_cycles = new IntList;
 	_sizes_obj = new IntList;
 	_sizes_bin = new IntList;
+	_sizes_func = new IntList;
 	_NW_sizes_obj=new IntList;
 	_CO_sizes_obj=new IntList;
 	_BT_sizes_obj=new IntList;
@@ -610,6 +701,11 @@ SummaryElem::SummaryElem(char *path,char *name) {
 	_BT_sizes_bin =new IntList;
 	_CSD_sizes_bin =new IntList;
 	_JPEG_sizes_bin =new IntList;
+	_NW_sizes_func =new IntList;
+	_CO_sizes_func =new IntList;
+	_BT_sizes_func =new IntList;
+	_CSD_sizes_func =new IntList;
+	_JPEG_sizes_func =new IntList;
 }
 
 
@@ -651,6 +747,20 @@ void SummaryElem::add_obj_size(char * tname, int val) {
   if (!strcmp(tname,"jpeg_csd")) _JPEG_sizes_obj->push_back(val);
 }
 
+
+void SummaryElem::add_func_size(char * tname, int val) {
+  bool is_ext=is_extension_info(tname);
+  if (core_only && is_ext)  return;
+  if (ext_only && !is_ext)  return;
+  _sizes_func->push_back(val);
+  if (!strcmp(tname,"eembc_networking")) _NW_sizes_func->push_back(val);
+  if (!strcmp(tname,"eembc_consumer")) _CO_sizes_func->push_back(val);
+  if (!strcmp(tname,"bluetooth")) _BT_sizes_func->push_back(val);
+  if (!strcmp(tname,"audio_csd")) _CSD_sizes_func->push_back(val);
+  if (!strcmp(tname,"jpeg_csd")) _JPEG_sizes_func->push_back(val);
+}
+
+
 IntList *SummaryElem::get_cycles(Dump_Type type) {
 	switch (type) {
 	case Run_Valid : 
@@ -668,8 +778,8 @@ IntList *SummaryElem::get_cycles(Dump_Type type) {
 	}
 	return NULL;
 }
-IntList *SummaryElem::get_size(Dump_Type type, bool is_obj) {
-	if(is_obj) {
+IntList *SummaryElem::get_size(Dump_Type type, int disc) {
+	if(disc == SIZE_OBJ) {
 		switch (type) {
 		case Run_Valid : 
 			return _sizes_obj;
@@ -684,7 +794,8 @@ IntList *SummaryElem::get_size(Dump_Type type, bool is_obj) {
 		case Audio_CSD :
 			return _CSD_sizes_obj;
 		}	
-	} else {
+	} 
+	if(disc == SIZE_BIN) {
 		switch (type) {
 		case Run_Valid : 
 			return _sizes_bin;
@@ -731,6 +842,7 @@ void SummaryClass::add_summary_value(char *path, char * name, char *tname, int t
       if (type==SPEED) (*iter_elem)->add_cycle(tname,value);
       if (type==SIZE_OBJ) (*iter_elem)->add_obj_size(tname,value);
       if (type==SIZE_BIN) (*iter_elem)->add_bin_size(tname,value);
+      if (type==SIZE_FUNC) (*iter_elem)->add_func_size(tname,value);
       break;
     }
   }
@@ -779,12 +891,12 @@ void SummaryClass::dump_summary_cc(char *name) {
 		fprintf(stdout," Max Gain: %5.5s, Max Loss: %5.5s, Geomean: %5.5s",minst,maxst,moyst);
 	}
 	fprintf(stdout,"\" />\n<property name=\"%s_%s_obj_size\" value=\"",base->get_name(),name);
-	if (compare->get_size(Run_Valid,true)->empty()) fprintf(stdout," Max Gain: N/A, Max loss:  N/A, Average: N/A");
+	if (compare->get_size(Run_Valid,SIZE_OBJ)->empty()) fprintf(stdout," Max Gain: N/A, Max loss:  N/A, Average: N/A");
 	else {
-		typeof(base->get_size(Run_Valid,true)->begin()) vb,vc;
+		typeof(base->get_size(Run_Valid,SIZE_OBJ)->begin()) vb,vc;
 		int nb_data=0;;
 		double sumb=0,sumc=0,min=0,max=0,tmp_val;
-		for (vb = base->get_size(Run_Valid,true)->begin(), vc=compare->get_size(Run_Valid,true)->begin(); vb != base->get_size(Run_Valid,true)->end(); ++vb, ++vc) {
+		for (vb = base->get_size(Run_Valid,SIZE_OBJ)->begin(), vc=compare->get_size(Run_Valid,SIZE_OBJ)->begin(); vb != base->get_size(Run_Valid,SIZE_OBJ)->end(); ++vb, ++vc) {
 			if (*vb<=-1 || *vc<=-1) continue;
 			nb_data++;
 			sumb+=*vb; sumc+=*vc;
@@ -800,12 +912,12 @@ void SummaryClass::dump_summary_cc(char *name) {
 		fprintf(stdout," Max Gain: %5.5s, Max Loss: %5.5s, Average: %5.5s",minst,maxst,moyst);
 	}
 	fprintf(stdout,"\" />\n<property name=\"%s_%s_bin_size\" value=\"",base->get_name(),name);
-	if (compare->get_size(Run_Valid,false)->empty()) fprintf(stdout," Max Gain: N/A, Max loss:  N/A, Average: N/A");
+	if (compare->get_size(Run_Valid,SIZE_BIN)->empty()) fprintf(stdout," Max Gain: N/A, Max loss:  N/A, Average: N/A");
 	else {
-		typeof(base->get_size(Run_Valid,false)->begin()) vb,vc;
+		typeof(base->get_size(Run_Valid,SIZE_BIN)->begin()) vb,vc;
 		int nb_data=0;;
 		double sumb=0,sumc=0,min=0,max=0,tmp_val;
-		for (vb = base->get_size(Run_Valid,false)->begin(), vc=compare->get_size(Run_Valid,false)->begin(); vb != base->get_size(Run_Valid,false)->end(); ++vb, ++vc) {
+		for (vb = base->get_size(Run_Valid,SIZE_BIN)->begin(), vc=compare->get_size(Run_Valid,SIZE_BIN)->begin(); vb != base->get_size(Run_Valid,SIZE_BIN)->end(); ++vb, ++vc) {
 			if (*vb<=-1 || *vc<=-1) continue;
 			nb_data++;
 			sumb+=*vb; sumc+=*vc;
@@ -880,12 +992,12 @@ void SummaryClass::dump_summary() {
 		compare = *iter_elem;
 		i++;
 		if (i==4) break;
-		if (compare->get_size(Run_Valid,true)->empty()) fprintf(stdout," %5.5s / %5.5s / %5.5s  |","  -  ","  -  ","  -  ");
+		if (compare->get_size(Run_Valid,SIZE_OBJ)->empty()) fprintf(stdout," %5.5s / %5.5s / %5.5s  |","  -  ","  -  ","  -  ");
 		else {
-			typeof(base->get_size(Run_Valid,true)->begin()) vb,vc;
+			typeof(base->get_size(Run_Valid,SIZE_OBJ)->begin()) vb,vc;
 			int nb_data=0;;
 			double sumb=0,sumc=0,min=0,max=0,tmp_val;
-			for (vb = base->get_size(Run_Valid,true)->begin(), vc=compare->get_size(Run_Valid,true)->begin(); vb != base->get_size(Run_Valid,true)->end(); ++vb, ++vc) {
+			for (vb = base->get_size(Run_Valid,SIZE_OBJ)->begin(), vc=compare->get_size(Run_Valid,SIZE_OBJ)->begin(); vb != base->get_size(Run_Valid,SIZE_OBJ)->end(); ++vb, ++vc) {
 				if (*vb<=-1 || *vc<=-1) continue;
 				nb_data++;
 				sumb+=*vb; sumc+=*vc;
@@ -908,12 +1020,12 @@ void SummaryClass::dump_summary() {
 		compare = *iter_elem;
 		i++;
 		if (i==4) break;
-		if (compare->get_size(Run_Valid,false)->empty()) fprintf(stdout," %5.5s / %5.5s / %5.5s  |","  -  ","  -  ","  -  ");
+		if (compare->get_size(Run_Valid,SIZE_BIN)->empty()) fprintf(stdout," %5.5s / %5.5s / %5.5s  |","  -  ","  -  ","  -  ");
 		else {
-			typeof(base->get_size(Run_Valid,false)->begin()) vb,vc;
+			typeof(base->get_size(Run_Valid,SIZE_BIN)->begin()) vb,vc;
 			int nb_data=0;;
 			double sumb=0,sumc=0,min=0,max=0,tmp_val;
-			for (vb = base->get_size(Run_Valid,false)->begin(), vc=compare->get_size(Run_Valid,false)->begin(); vb != base->get_size(Run_Valid,false)->end(); ++vb, ++vc) {
+			for (vb = base->get_size(Run_Valid,SIZE_BIN)->begin(), vc=compare->get_size(Run_Valid,SIZE_BIN)->begin(); vb != base->get_size(Run_Valid,SIZE_BIN)->end(); ++vb, ++vc) {
 				if (*vb<=-1 || *vc<=-1) continue;
 				nb_data++;
 				sumb+=*vb; sumc+=*vc;

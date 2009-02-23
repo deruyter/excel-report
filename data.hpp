@@ -23,6 +23,7 @@ extern bool Monitoring;
 enum {
   SIZE_OBJ,
   SIZE_BIN,
+  SIZE_FUNC,
   SPEED,
   SPEED_Vs_ARM
 };
@@ -192,6 +193,7 @@ public:
   void add_simulator_flags(char *name);
   void add_test_name(char *name);
   void add_test_size(char *test_name,char *target,Section sec,int size,int disc);
+  void add_test_func_size(char *test_name,char *target,char *object, char *function, int size, bool aggregated);
   void add_cycle_count(char *test_name, int number);
   void add_failure(char *name);
   TestList *get_tests(int disc);
@@ -214,6 +216,7 @@ private:
   NameList *_failures;
   TestList *_obj_size_tests; 
   TestList *_bin_size_tests; 
+  TestList *_func_size_tests; 
   TestList *_speed_tests; 
   char *section_name(Section sec);
   Test *find_test(char *name, int disc);
@@ -229,17 +232,19 @@ class SummaryElem {
   void add_cycle(char * tname, int val);
   void add_bin_size(char * tname, int val);
   void add_obj_size(char * tname, int val);
+  void add_func_size(char * tname, int val);
   char *get_name() {return _name;}
   char *get_cc_name();
   char *get_path() {return _path;}
   IntList *get_cycles(Dump_Type type);
-  IntList *get_size(Dump_Type type, bool is_obj);
+  IntList *get_size(Dump_Type type, int disc);
  private:
   char *_name;
   char *_path;
   IntList *_cycles;
   IntList *_sizes_obj;
   IntList *_sizes_bin;
+  IntList *_sizes_func;
   IntList *_NW_cycles;
   IntList *_CO_cycles;
   IntList *_BT_cycles;
@@ -255,6 +260,11 @@ class SummaryElem {
   IntList *_BT_sizes_bin;
   IntList *_CSD_sizes_bin;
   IntList *_JPEG_sizes_bin;
+  IntList *_NW_sizes_func;
+  IntList *_CO_sizes_func;
+  IntList *_BT_sizes_func;
+  IntList *_CSD_sizes_func;
+  IntList *_JPEG_sizes_func;
   };
 
 typedef std::list<TestSession*> SessionList;

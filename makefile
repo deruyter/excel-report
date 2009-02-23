@@ -59,7 +59,12 @@ CYACC4    = $(SRC_DIR)/parse_fail_yacc.cpp
 LEXSRC4   = $(SRC_DIR)/parse_fail.lex
 CLEX4     = $(SRC_DIR)/parse_fail_lex.cpp
 
-CFILES =  $(CYACC1) $(CLEX1) $(CYACC2) $(CLEX2) $(CYACC3) $(CLEX3) $(CYACC4) $(CLEX4)\
+YACCSRC5  = $(SRC_DIR)/parse_func.ypp
+CYACC5    = $(SRC_DIR)/parse_func_yacc.cpp
+LEXSRC5   = $(SRC_DIR)/parse_func.lex
+CLEX5     = $(SRC_DIR)/parse_func_lex.cpp
+
+CFILES =  $(CYACC1) $(CLEX1) $(CYACC2) $(CLEX2) $(CYACC3) $(CLEX3) $(CYACC4) $(CLEX4) $(CYACC5) $(CLEX5)\
 	$(SRC_DIR)/data.cpp \
 	$(SRC_DIR)/xml_dump.cpp \
 	$(SRC_DIR)/reporting_tool.cpp
@@ -94,6 +99,9 @@ $(CYACC3) : $(YACCSRC3)
 $(CYACC4) : $(YACCSRC4)
 	    $(YACC) $(YFLAGS) -p yy4 $(YACCSRC4) -o $(CYACC4)
 
+$(CYACC5) : $(YACCSRC5)
+	    $(YACC) $(YFLAGS) -p yy5 $(YACCSRC5) -o $(CYACC5)
+
 $(CLEX1) : $(LEXSRC1)
 	   $(LEX) $(LFLAGS) -o$(CLEX1) -Pyy1 $(LEXSRC1)
 
@@ -105,6 +113,9 @@ $(CLEX3) : $(LEXSRC3)
 
 $(CLEX4) : $(LEXSRC4)
 	   $(LEX) $(LFLAGS) -o$(CLEX4) -Pyy4 $(LEXSRC4)
+
+$(CLEX5) : $(LEXSRC5)
+	   $(LEX) $(LFLAGS) -o$(CLEX5) -Pyy5 $(LEXSRC5)
 
 %.o : $(SRC_DIR)/%.cpp 
 	${CC} ${CCFLAGS} $(CFLAGS) -I . -I $(SRC_DIR) -o $@ -c $<

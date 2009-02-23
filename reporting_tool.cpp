@@ -104,6 +104,7 @@ int main(int argc, char* argv[]) {
 	summary=SummaryClass();
 	bool obj_size = true;
 	bool bin_size = true;
+	bool func_size = true;
 	bool cycle = true;
 	bool compare_options = true;
 	bool generate_output_info = true;
@@ -281,6 +282,11 @@ int main(int argc, char* argv[]) {
 				if (Debug_on) printf("Parse Binary Codesize : %s, %d\n",filename,__LINE__);
 				parse_size(filename,SIZE_BIN);
 			}
+			if(func_size || Monitoring) {
+				sprintf(filename,"%s/BinaryFuncSize.txt",current_session->get_path());
+				if (Debug_on) printf("Parse Function Codesize : %s, %d\n",filename,__LINE__);
+				parse_funcsize(filename);
+			}
 			if(cycle || Monitoring) {
 				sprintf(filename,"%s/cyclesCount.txt",current_session->get_path());
 				if (Debug_on) printf("Parse Cycles : %s, %d\n",filename,__LINE__);
@@ -309,6 +315,11 @@ int main(int argc, char* argv[]) {
 					sprintf(filename,"%s/%s/BinaryCodeSize.txt",current_session->get_path(),tmp_name);
 					if (Debug_on) printf("Parse Binary Codesize : %s, %d\n",filename,__LINE__);
 					parse_size(filename,SIZE_BIN);
+				}
+				if(func_size || Monitoring) {
+					sprintf(filename,"%s/%s/BinaryFuncSize.txt",current_session->get_path(),tmp_name);
+					if (Debug_on) printf("Parse Function Codesize : %s, %d\n",filename,__LINE__);
+					parse_funcsize(filename);
 				}
 				if(cycle || Monitoring) {
 					sprintf(filename,"%s/%s/cyclesCount.txt",current_session->get_path(),tmp_name);
@@ -353,6 +364,14 @@ int main(int argc, char* argv[]) {
 			}
 		}
     }
+    if (func_size||Monitoring) {
+    	rootdata.compute_data(SIZE_FUNC);
+		ForEachPt(rootdata.get_disc(),iter) {
+			ForEachPt(rootdata.get_sessions(),iter_session) {
+				summary.add_summary_value((*iter_session)->get_path(),(*iter_session)->get_name(),(*iter)->get_test(),SIZE_FUNC,(*iter_session)->get_size(*iter,section_for_summary,SIZE_FUNC,false));
+			}
+		}
+    }
     if (cycle||Monitoring) {
     	rootdata.compute_data(SPEED);
 		ForEachPt(rootdata.get_disc(),iter) {
@@ -371,6 +390,8 @@ int main(int argc, char* argv[]) {
         output->create_monitored_page(rootdata, SIZE_OBJ);
         rootdata.compute_monitored_data(SIZE_BIN);
         output->create_monitored_page(rootdata, SIZE_BIN);
+        rootdata.compute_monitored_data(SIZE_FUNC);
+        output->create_monitored_page(rootdata, SIZE_FUNC);
         rootdata.compute_monitored_data(SPEED);
         output->create_monitored_page(rootdata, SPEED);
         rootdata.compute_monitored_data(SPEED_Vs_ARM);
@@ -389,6 +410,13 @@ int main(int argc, char* argv[]) {
 		rootdata.compute_data(SIZE_BIN);
 		for (i=0; i<LAST_SECTION; i++) {
 			if (size[i])  output->create_page(rootdata, SIZE_BIN, (Section)i);
+		}
+	}
+
+	if (func_size) {
+		rootdata.compute_data(SIZE_FUNC);
+		for (i=0; i<LAST_SECTION; i++) {
+			if (size[i])  output->create_page(rootdata, SIZE_FUNC, (Section)i);
 		}
 	}
 
