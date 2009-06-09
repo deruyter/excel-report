@@ -44,7 +44,7 @@ one_line:
 	FL_SECTION FL_SEPARATE FL_NAME FL_SEPARATE FL_NAME FL_COMA FL_NUMBER
 		{current_session->add_test_size($3,$5,$1,$7,disc_set);}
 	| FL_NAME FL_SEPARATE FL_NAME FL_SEPARATE FL_NAME FL_COMA FL_NUMBER 
-		{if(warn_level) fprintf(stderr,"WARNING : Unknown section %s ignored\n",$1);}
+		{if(warn_level>2) fprintf(stderr,"WARNING: Unknown section %s ignored\n",$1);}
 ;
 
 

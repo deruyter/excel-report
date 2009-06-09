@@ -600,10 +600,11 @@ void Excel_Output::create_monitored_page(RootDataClass& rootdata, int disc) {
 
 void Excel_Output::create_page(RootDataClass& rootdata, int disc, Section sec) {
   if(rootdata.get_nb_max_data()==0) return;
-  if (disc == SIZE_OBJ || disc == SIZE_BIN || disc == SIZE_FUNC ) {
+  if (disc == SIZE_OBJ || disc == SIZE_BIN || disc == SIZE_FUNC || disc == SIZE_APPLI) {
     char name[256],data_name[256],sheet_name[256],title[1024];
     switch (sec) {
     case TEXT :   sprintf(name,"Text"); break;
+    case BSS :   sprintf(name,"Bss"); break;
     case RODATA : sprintf(name,"Rodata"); break;
     case TOTAL : sprintf(name,"Total"); break;
     case RODATA_PLUS_TEXT : sprintf(name,"Text_Rodata"); break;
@@ -613,6 +614,7 @@ void Excel_Output::create_page(RootDataClass& rootdata, int disc, Section sec) {
     if(disc == SIZE_OBJ) strcat(name,"_Obj");
     if(disc == SIZE_BIN)strcat(name,"_Bin");
     if(disc == SIZE_FUNC)strcat(name,"_Func");
+    if(disc == SIZE_APPLI)strcat(name,"_Appli");
     sprintf(data_name,"Size_Data_%s",name);
     sprintf(title,"Size Datas on %s Section",name);
     create_data_page(rootdata, data_name, title, disc, sec, false);

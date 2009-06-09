@@ -24,6 +24,7 @@ enum {
   SIZE_OBJ,
   SIZE_BIN,
   SIZE_FUNC,
+  SIZE_APPLI,
   SPEED,
   SPEED_Vs_ARM
 };
@@ -217,6 +218,7 @@ private:
   TestList *_obj_size_tests; 
   TestList *_bin_size_tests; 
   TestList *_func_size_tests; 
+  TestList *_appli_size_tests; 
   TestList *_speed_tests; 
   char *section_name(Section sec);
   Test *find_test(char *name, int disc);

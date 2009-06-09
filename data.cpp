@@ -106,6 +106,7 @@ TestSession::TestSession(char *path, char *name) {
   _obj_size_tests=new TestList;
   _bin_size_tests=new TestList;
   _func_size_tests=new TestList;
+  _appli_size_tests=new TestList;
   _speed_tests=new TestList;
   _compiler_flags=new NameList;
   _simulator_flags=new NameList;
@@ -235,7 +236,20 @@ void TestSession::add_test_name(char *name){
     _func_size_tests->push_back(new Test("MP1v_viterbi"));
     _func_size_tests->push_back(new Test("Fx_SampleRate"));
     _func_size_tests->push_back(new Test("TS4x_test"));
-    
+   
+    _appli_size_tests->push_back(new Test("TSTx_test"));
+    _appli_size_tests->push_back(new Test("vx2_fgtdec"));
+    _appli_size_tests->push_back(new Test("vx2_test_memspace"));
+    _appli_size_tests->push_back(new Test("TS3x_test"));
+    _appli_size_tests->push_back(new Test("admX_AppliUsingadmX"));
+    _appli_size_tests->push_back(new Test("TS2x_test"));
+    _appli_size_tests->push_back(new Test("QMx_farrow_interpolator"));
+    _appli_size_tests->push_back(new Test("QMx_mixer"));
+    _appli_size_tests->push_back(new Test("Tx_CSD_extension_test"));
+    _appli_size_tests->push_back(new Test("MP1v_viterbi"));
+    _appli_size_tests->push_back(new Test("Fx_SampleRate"));
+    _appli_size_tests->push_back(new Test("TS4x_test"));
+        
     return;
   }
 
@@ -246,12 +260,15 @@ void TestSession::add_test_name(char *name){
     _bin_size_tests->push_back(new Test("whetstone-double"));
     _func_size_tests->push_back(new Test("whetstone-float"));
     _func_size_tests->push_back(new Test("whetstone-double"));
+    _appli_size_tests->push_back(new Test("whetstone-float"));
+    _appli_size_tests->push_back(new Test("whetstone-double"));
     return;
   } 
 
   _obj_size_tests->push_back(new Test(name));
   _bin_size_tests->push_back(new Test(name));
   _func_size_tests->push_back(new Test(name));
+  _appli_size_tests->push_back(new Test(name));
 
 }
 
@@ -283,9 +300,12 @@ void TestSession::add_test_size(char *test_name, char *target, Section sec, int 
 	mytarget = current_test->find_target(target_name);
 	if (!mytarget) mytarget = current_test->add_target(target_name);
 
+	if (mytarget->get_size(sec)!=0 && size == mytarget->get_size(sec) ) {
+		//Size already given => Skip it
+		return;
+	}
 	if (mytarget->get_size(sec)!=0) {
-		// if(warn_level) fprintf(stderr,"WARNING: Size value for test %s target %s section %s already given, skipped\n",test_name,target,section_name(sec));
-		size = size + mytarget->get_size(sec);
+		if(warn_level >= 2) fprintf(stderr,"WARNING: Size value for test %s target %s section %s already given\n",test_name,target,section_name(sec));
 	}
 	mytarget->set_size(sec, size);
 }
@@ -307,7 +327,7 @@ void TestSession::add_test_func_size(char *test_name,char *target,char *object, 
 	if(strstr(function, "BENCH_STR_MESSAGE")) return;
 	if(strstr(function, "BENCH_CHECK")) return;
 
-	
+
     /* PStone;auto/ auto/src/auto.o autom 4550 4194532*/
     /* PStone;auto/ auto/src/auto.o 4188 autom */
 
@@ -316,6 +336,13 @@ void TestSession::add_test_func_size(char *test_name,char *target,char *object, 
      * Target :  <function> (<object>)
      */
     
+	
+	if(strstr(object, ".ipakeep")) {
+		char *doubldot = strstr(function,"..");
+		if (doubldot) doubldot = strstr(doubldot+2,"..");
+		if (doubldot) *doubldot='\0';
+	}
+	
     char *tmp_test_name = compute_size_test_target_name(test_name,object,&target_name);
     Test *current_test=NULL;
     if(target[strlen(target)-1] == '/')  target[strlen(target)-1]='\0';
@@ -323,6 +350,18 @@ void TestSession::add_test_func_size(char *test_name,char *target,char *object, 
     if (strncmp(target,"src",3)==0) {
     	local_test_name=tmp_test_name;
     } else {
+    	char *tmp_search = strdup(object);
+    	char *tmp_for_test = strtok(tmp_search,"/");
+    	if (tmp_for_test && strcmp(tmp_for_test,target) == 0) {
+    		tmp_for_test = strtok(NULL,"/");
+    		if(tmp_for_test && strncmp(tmp_for_test,"src",3)!=0 && (tmp_for_test[strlen(tmp_for_test)-1] != 'o' || tmp_for_test[strlen(tmp_for_test)-2] != '.')) {
+    			target = strdup(tmp_for_test);
+    		}
+    	}
+    	tmp_search = strstr(target,"u.po.ipakeep");
+    	if (tmp_search) *tmp_search='\0';
+    	tmp_search = strstr(target,"_lite");
+    	if (tmp_search) *tmp_search='\0';
     	local_test_name=(char *) malloc(strlen(tmp_test_name) + strlen(target) + 5);
     	sprintf(local_test_name,"%s - %s",tmp_test_name,target);
     }
@@ -348,12 +387,25 @@ void TestSession::add_test_func_size(char *test_name,char *target,char *object, 
 		return;
 	}
 
-
     mytarget = current_test->find_target(target_name);
 	if (!mytarget) mytarget = current_test->add_target(target_name);
 
 	if (mytarget->get_size(TEXT)!=0 && aggregated) 	return;
 	mytarget->set_size(TEXT, size);
+
+	/*Add appli size*/
+    Test *current_appli_test=NULL;
+	char const_targ_name[]="Full Application";
+	ForEachPt(get_tests(SIZE_APPLI),iter) {
+		if (!strcmp((*iter)->get_name(),local_test_name)) {
+			current_appli_test=*iter;
+			break;
+		}
+	}
+    mytarget = current_appli_test->find_target(const_targ_name);
+	if (!mytarget) mytarget = current_appli_test->add_target(const_targ_name);
+    int old_size = mytarget->get_size(TEXT); 
+	mytarget->set_size(TEXT, size+old_size);
 }
 
 
@@ -559,6 +611,7 @@ TestList *TestSession::get_tests(int disc) {
   if (disc == SIZE_OBJ) return _obj_size_tests; 
   if (disc == SIZE_BIN) return _bin_size_tests; 
   if (disc == SIZE_FUNC) return _func_size_tests;
+  if (disc == SIZE_APPLI) return _appli_size_tests;
   if (disc == SPEED) return _speed_tests; 
   return NULL;
 }
@@ -863,7 +916,7 @@ static bool is_trunk(char *name) {
 
 void SummaryClass::dump_summary_cc(char *name) {
 	SummaryElem *base, *compare;
-	std::_List_iterator<SummaryElem*, SummaryElem*&, SummaryElem**> iter=_elem->begin();
+	SummaryElemList::iterator iter=_elem->begin();
 	base = *iter;
 	iter++;
 	compare = *iter;
@@ -1081,7 +1134,7 @@ static char *compute_size_test_target_name(char *name, char *tname ,char **targe
     else if (!strcmp(name, "eembc_v11.telecom"))     my_name = strdup("eembc_telecom");
     else my_name = strdup(name);
     
-    if (strstr(tname,".u")) *target = strdup(strrchr(tname,'/')+1);
+    if (strstr(tname,".u") && strstr(tname,"/")) *target = strdup(strrchr(tname,'/')+1);
     else *target = strdup(tname);
     return my_name;
 }

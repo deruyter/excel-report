@@ -27,9 +27,9 @@ void man() {
 	printf("\t-noext : do not generate sheet on extensions\n");
 	printf("\t-nocore : do not generate sheet on core\n");
 	printf("\t-s <section> : size on this section, valid section are: \n");
-	printf("\t-ref <fichier> : list of references directory to parse: \n");
 	printf("\t\ttext/data/rodata/bss/symtab/strtab/dbg/stxp70/total\n");
 	printf("\t\ttext_rodata : to combine text+rodata\n");
+	printf("\t-ref <fichier> : list of references directory to parse: \n");
 	printf("\t-key <name> : directory name to consider under referenced directory from ref option \n");
 	exit(0);
 }
@@ -165,6 +165,8 @@ int main(int argc, char* argv[]) {
 			obj_size=false;
 		} else if (!strcmp((*argv), "-nobin")) {
 			bin_size=false;
+		} else if (!strcmp((*argv), "-nofunc")) {
+			func_size=false;
 		} else if (!strcmp((*argv), "-nocycles")) {
 			cycle=false;
 		} else if (!strcmp((*argv), "-noccopt")) {
@@ -237,6 +239,7 @@ int main(int argc, char* argv[]) {
 			}
 			strcat(tmp_name, "/");
 			strcat(tmp_name, key_name);
+			// TDR - Check info_....
 			sprintf(filename, "%s/INFO", tmp_name);
 			FILE *my_tmp_file = fopen(filename, "r");
 			if (!my_tmp_file) {
@@ -257,76 +260,37 @@ int main(int argc, char* argv[]) {
 	ForEachPt(rootdata.get_sessions(),iter_session) {
 		current_session = *iter_session;
 		char tmp_name[2048];
-		sprintf(tmp_name,"%s/SUBTESTS",current_session->get_path());
-		FILE *my_tmp_file = fopen(tmp_name, "r");
-		if (!my_tmp_file) {
-			sprintf(filename,"%s/BANNER",current_session->get_path());
-			if (fopen(filename,"r")) {   
-			    if (Debug_on) printf("Parse BANNER : %s, %d\n",filename,__LINE__);
-			    parse_info(filename);
-			} else {
-			    sprintf(filename,"%s/INFO",current_session->get_path());
-			    if (Debug_on) printf("Parse INFO : %s, %d\n",filename,__LINE__);
-			    parse_info(filename);
-			}
-			sprintf(filename,"%s/FAILED",current_session->get_path());
-			if (Debug_on) printf("Parse FAIL : %s, %d\n",filename,__LINE__);
-			parse_fail(filename);
-			if(obj_size || Monitoring) {
-				sprintf(filename,"%s/codeSize.txt",current_session->get_path());
-				if (Debug_on) printf("Parse Codesize : %s, %d\n",filename,__LINE__);
-				parse_size(filename,SIZE_OBJ);
-			}
-			if(bin_size || Monitoring) {
-				sprintf(filename,"%s/BinaryCodeSize.txt",current_session->get_path());
-				if (Debug_on) printf("Parse Binary Codesize : %s, %d\n",filename,__LINE__);
-				parse_size(filename,SIZE_BIN);
-			}
-			if(func_size || Monitoring) {
-				sprintf(filename,"%s/BinaryFuncSize.txt",current_session->get_path());
-				if (Debug_on) printf("Parse Function Codesize : %s, %d\n",filename,__LINE__);
-				parse_funcsize(filename);
-			}
-			if(cycle || Monitoring) {
-				sprintf(filename,"%s/cyclesCount.txt",current_session->get_path());
-				if (Debug_on) printf("Parse Cycles : %s, %d\n",filename,__LINE__);
-				parse_cycle(filename);
-			}
+		sprintf(filename,"%s/BANNER",current_session->get_path());
+		if (fopen(filename,"r")) {   
+		    if (Debug_on) printf("Parse BANNER : %s, %d\n",filename,__LINE__);
+		    parse_info(filename);
 		} else {
-			//Here we have subdirs for tests.
-			bool first_test=true;
-			while (!feof(my_tmp_file)) {
-				fscanf(my_tmp_file, "%s\n", tmp_name);
-				if (first_test) {
-					sprintf(filename,"%s/%s/INFO",current_session->get_path(),tmp_name);
-					if (Debug_on) printf("Parse INFO : %s, %d\n",filename,__LINE__);
-					parse_info(filename);
-					first_test=false;
-				}
-				sprintf(filename,"%s/%s/FAILED",current_session->get_path(),tmp_name);
-				if (Debug_on) printf("Parse FAIL : %s, %d\n",filename,__LINE__);
-				parse_fail(filename);
-				if(obj_size || Monitoring) {
-					sprintf(filename,"%s/%s/codeSize.txt",current_session->get_path(),tmp_name);
-					if (Debug_on) printf("Parse Codesize : %s, %d\n",filename,__LINE__);
-					parse_size(filename,SIZE_OBJ);
-				}
-				if(bin_size || Monitoring) {
-					sprintf(filename,"%s/%s/BinaryCodeSize.txt",current_session->get_path(),tmp_name);
-					if (Debug_on) printf("Parse Binary Codesize : %s, %d\n",filename,__LINE__);
-					parse_size(filename,SIZE_BIN);
-				}
-				if(func_size || Monitoring) {
-					sprintf(filename,"%s/%s/BinaryFuncSize.txt",current_session->get_path(),tmp_name);
-					if (Debug_on) printf("Parse Function Codesize : %s, %d\n",filename,__LINE__);
-					parse_funcsize(filename);
-				}
-				if(cycle || Monitoring) {
-					sprintf(filename,"%s/%s/cyclesCount.txt",current_session->get_path(),tmp_name);
-					if (Debug_on) printf("Parse Cycles : %s, %d\n",filename,__LINE__);
-					parse_cycle(filename);
-				}
-			}				
+		    sprintf(filename,"%s/INFO",current_session->get_path());
+		    if (Debug_on) printf("Parse INFO : %s, %d\n",filename,__LINE__);
+		    parse_info(filename);
+		}
+		sprintf(filename,"%s/FAILED",current_session->get_path());
+		if (Debug_on) printf("Parse FAIL : %s, %d\n",filename,__LINE__);
+		parse_fail(filename);
+		if(obj_size || Monitoring) {
+			sprintf(filename,"%s/codeSize.txt",current_session->get_path());
+			if (Debug_on) printf("Parse Codesize : %s, %d\n",filename,__LINE__);
+			parse_size(filename,SIZE_OBJ);
+		}
+		if(bin_size || Monitoring) {
+			sprintf(filename,"%s/BinaryCodeSize.txt",current_session->get_path());
+			if (Debug_on) printf("Parse Binary Codesize : %s, %d\n",filename,__LINE__);
+			parse_size(filename,SIZE_BIN);
+		}
+		if(func_size || Monitoring) {
+			sprintf(filename,"%s/BinaryFuncSize.txt",current_session->get_path());
+			if (Debug_on) printf("Parse Function Codesize : %s, %d\n",filename,__LINE__);
+			parse_funcsize(filename);
+		}
+		if(cycle || Monitoring) {
+			sprintf(filename,"%s/cyclesCount.txt",current_session->get_path());
+			if (Debug_on) printf("Parse Cycles : %s, %d\n",filename,__LINE__);
+			parse_cycle(filename);
 		}
 	}
 
@@ -417,6 +381,10 @@ int main(int argc, char* argv[]) {
 		rootdata.compute_data(SIZE_FUNC);
 		for (i=0; i<LAST_SECTION; i++) {
 			if (size[i])  output->create_page(rootdata, SIZE_FUNC, (Section)i);
+		}
+		rootdata.compute_data(SIZE_APPLI);
+		for (i=0; i<LAST_SECTION; i++) {
+			if (size[i])  output->create_page(rootdata, SIZE_APPLI, (Section)i);
 		}
 	}
 
