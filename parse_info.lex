@@ -49,6 +49,7 @@ string          [a-zA-Z/-@\-0-9_\.]*
 <CPVERSION>"Unknown"						  	{yy1lval.name=strdup("00000000");return FL_DATE;}
 <CPVERSION>"["{number}"/"{number}"/"{number}"]" {yy1lval.name=strdup(yy1text);BEGIN(IGNORE_LINE);return FL_DATE;}
 <CPVERSION>"("                 BEGIN(IGNORE_LINE);
+<CPVERSION>.                  BEGIN(IGNORE_LINE);
 
 <COMPFLAGS>{nl}   {++line_num;BEGIN(INITIAL);}
 <COMPFLAGS>[^ \n]*  {yy1lval.name=strdup(yy1text);  return FL_OPTION;}
@@ -57,11 +58,12 @@ string          [a-zA-Z/-@\-0-9_\.]*
 
 {nl} {line_num++;}
 {ws} ;
-{line_separator} 	{if (line_sep) BEGIN(IGNORE); else line_sep=true;};
+{line_separator} 		{if (line_sep) BEGIN(IGNORE); else line_sep=true;};
 "Validation"{ws}":"    	return FL_VALID;
 "SX Toolset"{ws}":"    	{BEGIN(LNAME);return FL_TOOLSET;}
 "stxp70cc"{ws}":"      	{BEGIN(CPVERSION);return FL_VERSION;}
-"sxcc"{ws}":"      	{BEGIN(CPVERSION);return FL_VERSION;}
+"st200cc"{ws}":"      	{BEGIN(CPVERSION);return FL_VERSION;}
+"sxcc"{ws}":"      		{BEGIN(CPVERSION);return FL_VERSION;}
 "simu version"{ws}":"  	{BEGIN(LNAME);return FL_SIMU;}
 "runner flags"{ws}":"  	return FL_SIM_FLAGS;
 "extra flags"{ws}":"  	BEGIN(IGNORE_LINE);

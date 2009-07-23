@@ -604,6 +604,7 @@ void Excel_Output::create_page(RootDataClass& rootdata, int disc, Section sec) {
     char name[256],data_name[256],sheet_name[256],title[1024];
     switch (sec) {
     case TEXT :   sprintf(name,"Text"); break;
+    case DATA :   sprintf(name,"Data"); break;
     case BSS :   sprintf(name,"Bss"); break;
     case RODATA : sprintf(name,"Rodata"); break;
     case TOTAL : sprintf(name,"Total"); break;

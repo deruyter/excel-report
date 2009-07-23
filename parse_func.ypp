@@ -1,0 +1,71 @@
+/************** include section **************/
+%{
+#include "common_parse.hpp"
+extern char yy5text[];
+#define YYINITDEPTH 10000
+#define YYMAXDEPTH  100000
+%}
+
+/************** Tokens and Structures used **************/
+
+%token FL_SECTION  FL_NAME FL_SEPARATE FL_NUMBER FL_NEW_LINE
+
+%union {
+  char *name;
+  int val;
+  Section sec;
+}
+
+
+%type <val>
+	FL_NUMBER
+	stxp70v3_func_followup
+	stxp70v4_func_followup
+	
+%type <name>
+	FL_NAME
+
+%type <sec>
+	FL_SECTION
+
+
+%start size_file
+
+%%
+/************** Grammar begin ***************/
+size_file :
+    | lines
+;
+
+lines :
+	one_line
+	|one_line lines
+;
+
+/* PStone;auto/ auto/src/auto.o autom 4550 4194532*/
+/* PStone;auto/ auto/src/auto.o 4188 autom */
+
+
+one_line:
+	FL_NAME FL_SEPARATE FL_NAME FL_NAME FL_NAME FL_NUMBER FL_NUMBER stxp70v4_func_followup FL_NEW_LINE
+	{current_session->add_test_func_size($1,$3,$4,$5,$6+$8,$8!=0);}
+|
+	FL_NAME FL_SEPARATE FL_NAME FL_NAME FL_NUMBER FL_NAME stxp70v3_func_followup FL_NEW_LINE
+	{current_session->add_test_func_size($1,$3,$4,$6,$5+$7,$7!=0);}
+|
+	FL_NEW_LINE
+;
+
+stxp70v3_func_followup:
+	{$$=0;}
+|
+	FL_NUMBER FL_NAME stxp70v3_func_followup
+	{$$=$1+$3;}
+;
+
+stxp70v4_func_followup:
+	{$$=0;}
+|
+	FL_NAME FL_NUMBER FL_NUMBER stxp70v4_func_followup
+	{$$=$2+$4;}
+;
