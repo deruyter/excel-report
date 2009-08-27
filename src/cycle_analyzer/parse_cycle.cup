@@ -1,0 +1,50 @@
+package cycle_analyzer;
+
+import java_cup.runtime.*;
+import reporting_tool.*;
+
+scan with {: return lexer.next_token(); :};
+
+parser code {: 
+  public boolean syntaxErrors;
+  Cycle_Lexer lexer;
+
+  public Cycle_Parser(Cycle_Lexer lex) {
+      super(lex);
+      lexer = lex;
+  }
+
+  public void report_error(String message, Object info) {
+    syntaxErrors = true;
+    System.out.print(message);
+    if ( !(info instanceof Symbol) ) return;
+    Symbol symbol = (Symbol) info;
+    
+    if ( symbol.left < 0 || symbol.right < 0 ) return;
+    System.out.println(" at line "+symbol.left+", column "+symbol.right);
+  }
+:}; 
+
+
+terminal FL_COMA;
+terminal String FL_NAME;
+terminal Long FL_NUMBER;
+non terminal cycle_file, lines, one_line;
+
+/************** Grammar begin ***************/
+cycle_file ::=
+	| lines
+;
+
+lines::=
+	one_line
+	|one_line lines
+;
+
+one_line::=
+	 FL_NAME:name FL_COMA FL_NUMBER:value
+	{: sqa_report.current_test_session.add_cycle_count(name,value); :}
+;
+
+
+

@@ -1,0 +1,108 @@
+package info_analyzer;
+
+import java_cup.runtime.*;
+import reporting_tool.*;
+
+scan with {: return lexer.next_token(); :};
+
+parser code {: 
+  public boolean syntaxErrors;
+  Info_Lexer lexer;
+
+  public Info_Parser(Info_Lexer lex) {
+      super(lex);
+      lexer = lex;
+  }
+
+  public void report_error(String message, Object info) {
+    syntaxErrors = true;
+    System.out.print(message);
+    if ( !(info instanceof Symbol) ) return;
+    Symbol symbol = (Symbol) info;
+    
+    if ( symbol.left < 0 || symbol.right < 0 ) return;
+    System.out.println(" at line "+symbol.left+", column "+symbol.right);
+  }
+:}; 
+
+
+terminal FL_VALID, FL_TOOLSET, FL_VERSION, FL_SIMU, FL_SIM_FLAGS, FL_COMP_FLAGS, FL_MACHINE_NAME;
+terminal FL_DAY, FL_MODE, FL_LOGDIR, FL_TESTS;
+terminal String FL_NAME,FL_DATE,FL_OPTION;
+terminal Integer FL_MONTH,FL_NUMBER;
+non terminal info_file, valid, toolset, ccversion;
+non terminal simversion, ccflags, ccopt_list, simflags, sim_name_list;
+non terminal mode, logdir, tests, name_list;
+
+/************** Grammar begin ***************/
+info_file ::= 
+	valid toolset ccversion simversion ccflags simflags mode logdir tests
+;
+
+valid ::=
+	FL_VALID FL_DAY FL_MONTH:month FL_NUMBER:day FL_NUMBER:hour FL_NUMBER:min FL_NUMBER:sec FL_NAME FL_NUMBER:year
+	{: sqa_report.current_test_session.set_date(day,month,year,hour,min,sec); :}
+; 
+
+toolset ::=
+	FL_TOOLSET FL_NAME:name
+	{: sqa_report.current_test_session.compiler_name = name ; :}
+;
+
+ccversion ::= 
+	FL_VERSION FL_NAME:name FL_DATE:date
+	{: sqa_report.current_test_session.compiler_version = name;
+	   sqa_report.current_test_session.compiler_date = date; :}
+;
+
+simversion ::=
+	FL_SIMU 
+	|FL_SIMU FL_NAME:name
+	{: sqa_report.current_test_session.simulator_version = name; :}
+;
+
+ccflags ::=
+	FL_COMP_FLAGS
+	|FL_COMP_FLAGS ccopt_list
+;
+
+ccopt_list ::=
+	FL_OPTION:option
+	{: sqa_report.current_test_session.compiler_flags.add(option); :}
+	|ccopt_list FL_OPTION:option
+	{: sqa_report.current_test_session.compiler_flags.add(option); :}
+;
+
+simflags ::=
+	FL_SIM_FLAGS	
+	|FL_SIM_FLAGS sim_name_list
+;
+sim_name_list ::=
+	FL_OPTION:option
+	{: sqa_report.current_test_session.simulator_flags.add(option); :}
+	|sim_name_list FL_OPTION:option
+	{: sqa_report.current_test_session.simulator_flags.add(option); :}
+;
+
+mode ::=
+	FL_MODE FL_NAME:name
+	{: sqa_report.current_test_session.mode = name; :}
+	|
+;
+
+logdir ::=
+	FL_LOGDIR FL_MACHINE_NAME FL_NAME:name
+	| FL_LOGDIR FL_NAME:name
+;
+
+tests ::=
+	FL_TESTS name_list
+;
+
+name_list ::=
+	FL_NAME:name
+	{: sqa_report.current_test_session.add_test_name(name); :}
+	|name_list FL_NAME:name
+	{: sqa_report.current_test_session.add_test_name(name); :}
+;
+

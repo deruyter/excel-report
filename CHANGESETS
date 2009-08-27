@@ -1,6 +1,82 @@
 ------------------------------------------------------
                SVNBRANCH CHANGESET
 ------------------------------------------------------
+	Date  :    Thu Aug 27 10:05:43 CEST 2009
+	Author:    dt25
+	Parent:    https://codex.cro.st.com/svnroot/stxp70cc/stxp70-report/trunk
+	Branch:    https://codex.cro.st.com/svnroot/stxp70cc/stxp70-report/branches/dt25/dev-new-excel-output
+
+Description:
+------------
+	* This is the new Excel format support based on HSSF API
+          Also there are less sheets integrating datas  
+
+
+Modified Files:
+---------------
+	D      parse_cycle.lex
+	D      reporting_tool.cpp
+	A  +   src
+	A  +   src/size_analyzer
+	A  +   src/size_analyzer/parse_size.cup
+	A  +   src/size_analyzer/parse_size.jflex
+	A  +   src/fail_analyzer
+	A  +   src/fail_analyzer/parse_fail.cup
+	A  +   src/fail_analyzer/parse_fail.jflex
+	A  +   src/func_analyzer
+	A  +   src/func_analyzer/parse_func.cup
+	A  +   src/func_analyzer/parse_func.jflex
+	A  +   src/info_analyzer
+	A  +   src/info_analyzer/parse_info.cup
+	A  +   src/info_analyzer/parse_info.jflex
+	A  +   src/java-cup-11a.jar
+	A  +   src/JFlex.jar
+	A  +   src/cycle_analyzer
+	A  +   src/cycle_analyzer/parse_cycle.cup
+	A  +   src/cycle_analyzer/parse_cycle.jflex
+	A  +   src/reporting_tool
+	A  +   src/reporting_tool/Test.java
+	A  +   src/reporting_tool/sqa_report.java
+	A  +   src/reporting_tool/Xml_Output.java
+	A  +   src/reporting_tool/CommonData.java
+	A  +   src/reporting_tool/RootDataClass.java
+	A  +   src/reporting_tool/RootTest.java
+	A  +   src/reporting_tool/TestSession.java
+	A  +   src/reporting_tool/Target.java
+	A  +   src/reporting_tool/Xls_Output.java
+	A  +   src/reporting_tool/Sections.java
+	A  +   src/reporting_tool/Discriminent.java
+	A  +   src/reporting_tool/Summary.java
+	D      data.cpp
+	D      parse_size.lex
+	A  +   clean.sh
+	D      parse_fail.lex
+	D      parse_func.ypp
+	D      parse_info.ypp
+	D      data.hpp
+	D      parse_cycle.ypp
+	D      xml_dump.cpp
+	A  +   MANIFEST
+	A  +   lib
+	A  +   lib/poi-scratchpad-3.5-beta6-20090622.jar
+	A  +   lib/java-cup-11a-runtime.jar
+	A  +   lib/poi-ooxml-3.5-beta6-20090622.jar
+	A  +   lib/poi-contrib-3.5-beta6-20090622.jar
+	A  +   lib/poi-3.5-beta6-20090622.jar
+	D      common_parse.hpp
+	A  +   bin
+	A  +   build.sh
+	D      xml_dump.hpp
+	D      parse_size.ypp
+	D      parse_func.lex
+	D      parse_info.lex
+	D      parse_fail.ypp
+	D      makefile
+
+
+------------------------------------------------------
+               SVNBRANCH CHANGESET
+------------------------------------------------------
 	Date  :    Thu Aug  7 16:06:19 CEST 2008
 	Author:    dt25
 	Parent:    https://codex.cro.st.com/svnroot/stxp70cc/stxp70-report/trunk

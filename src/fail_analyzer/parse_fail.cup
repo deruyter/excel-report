@@ -1,0 +1,42 @@
+package fail_analyzer;
+
+import java_cup.runtime.*;
+import reporting_tool.*;
+
+scan with {: return lexer.next_token(); :};
+
+parser code {: 
+  public boolean syntaxErrors;
+  Fail_Lexer lexer;
+
+  public Fail_Parser(Fail_Lexer lex) {
+      super(lex);
+      lexer = lex;
+  }
+
+  public void report_error(String message, Object info) {
+    syntaxErrors = true;
+    System.out.print(message);
+    if ( !(info instanceof Symbol) ) return;
+    Symbol symbol = (Symbol) info;
+    
+    if ( symbol.left < 0 || symbol.right < 0 ) return;
+    System.out.println(" at line "+symbol.left+", column "+symbol.right);
+  }
+:}; 
+
+
+terminal String FL_NAME;
+non terminal fail, name_list;
+
+fail ::=
+	| name_list
+;
+
+name_list ::=
+	FL_NAME:name
+	{: sqa_report.current_test_session.failures.add(name); :}
+	|name_list FL_NAME:name
+	{: sqa_report.current_test_session.failures.add(name); :}
+;
+

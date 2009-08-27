@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Created-By: Thomas Deruyter
+Class-Path: .
+Main-Class: reporting_tool.sqa_report

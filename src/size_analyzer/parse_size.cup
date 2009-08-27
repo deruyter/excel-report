@@ -1,0 +1,41 @@
+package size_analyzer;
+
+import java_cup.runtime.*;
+import reporting_tool.*;
+
+scan with {: return lexer.next_token(); :};
+
+parser code {: 
+  public boolean syntaxErrors;
+  Size_Lexer lexer;
+
+  public Size_Parser(Size_Lexer lex) {
+      super(lex);
+      lexer = lex;
+  }
+
+  public void report_error(String message, Object info) {
+    syntaxErrors = true;
+    System.out.print(message);
+    if ( !(info instanceof Symbol) ) return;
+    Symbol symbol = (Symbol) info;
+    
+    if ( symbol.left < 0 || symbol.right < 0 ) return;
+    System.out.println(" at line "+symbol.left+", column "+symbol.right);
+  }
+:}; 
+
+
+terminal FL_SEPARATE, FL_COMA;
+terminal String FL_NAME;
+terminal Integer FL_NUMBER;
+terminal Sections FL_SECTION;
+non terminal size_file, lines, one_line;
+
+size_file ::=  | lines ;
+lines ::= one_line | one_line lines ;
+one_line ::= FL_SECTION:s FL_SEPARATE FL_NAME:n1 FL_SEPARATE FL_NAME:n2 FL_COMA FL_NUMBER:v
+		{: sqa_report.current_test_session.add_test_size(n1,n2,s,v,sqa_report.current_parse_discriminent); :}
+	| FL_NAME:n FL_SEPARATE FL_NAME FL_SEPARATE FL_NAME FL_COMA FL_NUMBER 
+		{: if(sqa_report.warn_level>2) System.err.println("WARNING: Unknown section" + n + "ignored\n"); :}
+;

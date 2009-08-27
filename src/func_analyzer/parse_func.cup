@@ -1,0 +1,70 @@
+package func_analyzer;
+
+import java_cup.runtime.*;
+import reporting_tool.*;
+
+scan with {: return lexer.next_token(); :};
+
+parser code {: 
+  public boolean syntaxErrors;
+  Func_Lexer lexer;
+
+  public Func_Parser(Func_Lexer lex) {
+      super(lex);
+      lexer = lex;
+  }
+
+  public void report_error(String message, Object info) {
+    syntaxErrors = true;
+    System.out.print(message);
+    if ( !(info instanceof Symbol) ) return;
+    Symbol symbol = (Symbol) info;
+    
+    if ( symbol.left < 0 || symbol.right < 0 ) return;
+    System.out.println(" at line "+symbol.left+", column "+symbol.right);
+  }
+:}; 
+
+
+terminal FL_SEPARATE, FL_NEW_LINE;
+terminal String FL_NAME;
+terminal Integer FL_NUMBER;
+non terminal size_file, lines, one_line;
+non terminal Integer stxp70v3_func_followup, stxp70v4_func_followup;
+
+/************** Grammar begin ***************/
+size_file ::=
+    | lines
+;
+
+lines ::=
+	one_line
+	|one_line lines
+;
+
+/* PStone;auto/ auto/src/auto.o autom 4550 4194532*/
+/* PStone;auto/ auto/src/auto.o 4188 autom */
+
+one_line ::=
+	FL_NAME:bench FL_SEPARATE FL_NAME:target FL_NAME:obj FL_NAME:func FL_NUMBER:val FL_NUMBER stxp70v4_func_followup:next_val FL_NEW_LINE
+	{: sqa_report.current_test_session.add_test_func_size(bench,target,obj,func,val+next_val,next_val!=0); :}
+|
+	FL_NAME:bench FL_SEPARATE FL_NAME:target FL_NAME:obj FL_NUMBER:val FL_NAME:func stxp70v3_func_followup:next_val FL_NEW_LINE
+	{: sqa_report.current_test_session.add_test_func_size(bench,target,obj,func,val+next_val,next_val!=0); :}
+|
+	FL_NEW_LINE
+;
+
+stxp70v3_func_followup ::=
+	{: RESULT=0; :}
+|
+	FL_NUMBER:val FL_NAME stxp70v3_func_followup:next_val
+	{: RESULT=val+next_val; :}
+;
+
+stxp70v4_func_followup ::=
+	{: RESULT=0; :}
+|
+	FL_NAME FL_NUMBER:val FL_NUMBER stxp70v4_func_followup:next_val
+	{: RESULT=val+next_val; :}
+;
