@@ -60,39 +60,31 @@ public class Xls_Output {
 		cur_cell.setCellStyle(style);
 		cur_cell.setCellValue(string);
 	}
-
 	private void string_cell(Row myrow, int position, String string){
 		cur_cell = myrow.createCell(position);
 		cur_cell.setCellValue(string);
 	}
-
-	
 	private void string_out(String string) {
 		cur_cell.setCellValue(cur_cell.getStringCellValue() + string);
 	}
-
 	private void number_cell(Row myrow, int postition, CellStyle style, int val) {
 		cur_cell = myrow.createCell(postition);
 		cur_cell.setCellStyle(style);
 		cur_cell.setCellValue(val);
 		cur_cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
 	}
-
 	private void number_cell(Row myrow, int postition,  long val) {
 		cur_cell = myrow.createCell(postition);
 		cur_cell.setCellValue(val);
 		cur_cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
 	}
-
-
 	private void formula_cell(Row myrow, int position, CellStyle style,String string){
 		cur_cell = myrow.createCell(position);
 		cur_cell.setCellStyle(style);
 		cur_cell.setCellFormula(string);
 		cur_cell.setCellType(HSSFCell.CELL_TYPE_FORMULA);
 	}
-
-	private void formula_cell(Row myrow, int position,String string){
+	private void formula_cell(Row myrow, int position, String string){
 		cur_cell = myrow.createCell(position);
 		cur_cell.setCellFormula(string);
 		cur_cell.setCellType(HSSFCell.CELL_TYPE_FORMULA);
@@ -164,7 +156,6 @@ public class Xls_Output {
 		}
 		output.close();
 	}
-
 
 	private void apply_format(Sheet my_sheet, int mode, int session_number, int nb_data) {
 		
@@ -755,7 +746,6 @@ public class Xls_Output {
 			create_full_page(rootdata, "Cycles", "Cycles Analysis", disc, sec);
 		}
 	}
-
 	
 	public void create_page(RootDataClass rootdata, Discriminent disc, Sections sec){
 		if(rootdata.get_nb_max_data()==0) return;

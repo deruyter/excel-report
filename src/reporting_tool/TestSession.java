@@ -577,4 +577,14 @@ public class TestSession {
 		return simulator_version;
 	}
 
+	public void set_compiler_name(String name) {
+		if (!sqa_report.Cruise_Control) compiler_name=name;
+		else {
+			// /home/compwork/cruisecontrol/open64-nightly-res/compilers/open64-linux-dt25-dev-gcm-merge-4-2-23140/stxp70v4/toolset
+			compiler_name = name.substring(name.indexOf("open64-linux")+13);
+			compiler_name = compiler_name.substring(0,compiler_name.indexOf("/"));
+		}
+		
+	}
+
 }

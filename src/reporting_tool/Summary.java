@@ -113,7 +113,8 @@ public class Summary {
 			if (tname.contains("jpeg_csd")) JPEG_sizes_func.add(val);			
 		}
 		String get_cc_name(){
-			return path.substring(path.lastIndexOf("/")+1);
+			String result = path.substring(0,path.lastIndexOf("/"));
+			return result.substring(0, result.lastIndexOf("/"));
 		}
 
 		ArrayList<Long> get_cycles(CommonData.Dump_Type type){
@@ -176,22 +177,29 @@ public class Summary {
 		}
 	}
 
+	
+//	<property name="O3MultCAS_ref_compiler" value="23251"/>
+//	<property name="O3MultCAS_ref_cycles" value=" Max Gain: 0.000, Max Loss: 0.000, Geomean: 0.000" />
+//	<property name="O3MultCAS_ref_obj_size" value=" Max Gain: 0.000, Max Loss: 0.000, Average: 0.000" />
+//	<property name="O3MultCAS_ref_bin_size" value=" Max Gain: 0.000, Max Loss: 0.000, Average: 0.000" />
+
 
 	public void dump_summary(boolean CruisControl, String Name) {
 		SummaryElement base, compare;
 		int i=0;
 		base = elements.get(0);
 		if(!CruisControl) System.out.printf( "%22.22s  |", "");
+		if (CruisControl) {
+			if (elements.size() < 2) System.out.printf("<property name=\"%s_%s_compiler\" value=\"0\"/>\n",base.get_name(),Name);
+			else System.out.printf("<property name=\"%s_%s_compiler\" value=\"%s\"/>\n",base.get_name(),Name,get_version_num(elements.get(1).get_cc_name()));
+			System.out.printf("<property name=\"%s_%s_cycles\" value=\"",base.get_name(),Name);
+		}
 		ListIterator<SummaryElement> iter_elem = elements.listIterator(1);
 		while(iter_elem.hasNext()) {
 			compare = iter_elem.next();
 			if(base == compare) continue;
 			i++;
-			if (CruisControl) {
-				System.out.printf("<property name=\"%s_%s_compiler\" value=\"%s\"/>\n",base.get_name(),Name,get_version_num(compare.get_cc_name()));
-				System.out.printf("<property name=\"%s_%s_cycles\" value=\"",base.get_name(),Name);
-				break;
-			}
+			if (CruisControl) 	break;
 			if (i==4) break;
 			if(!CruisControl) System.out.printf("%22.22s  |",compare.get_name());
 		}
@@ -236,7 +244,8 @@ public class Summary {
 						String.format("%4.4f",moy*100.00));	
 			}
 		}
-		System.out.printf( "\n%14.14s Size Obj |", base.get_name());
+		if (CruisControl) System.out.printf("\" />\n<property name=\"%s_%s_obj_size\" value=\"",base.get_name(),Name);
+		else System.out.printf( "\n%14.14s Size Obj |", base.get_name());
 		i=0;
 		iter_elem = elements.listIterator(1);
 		while(iter_elem.hasNext()) {
@@ -275,7 +284,8 @@ public class Summary {
 			}
 		}
 		i=0;
-		System.out.printf( "\n%14.14s Size Bin |", base.get_name());
+		if (CruisControl) System.out.printf("\" />\n<property name=\"%s_%s_bin_size\" value=\"",base.get_name(),Name);
+		else System.out.printf( "\n%14.14s Size Bin |", base.get_name());
 		iter_elem = elements.listIterator(1);
 		while(iter_elem.hasNext()) {
 			compare = iter_elem.next();
@@ -312,13 +322,15 @@ public class Summary {
 						String.format("%4.4f",moy*100.00));	
 			}
 		}
-		System.out.printf( "\n");
+		if (CruisControl) System.out.printf("\" />\n");
+		else System.out.printf( "\n");
 	}
 	
 	private String get_version_num(String name) {
-		Integer i = name.length();
+		Integer i = name.length()-1;
+		//System.out.println("String version = " + name);
 		while (Character.isDigit(name.charAt(i))) i--;  
-		return name.substring(i);
+		return name.substring(i+1);
 	}
 
 	public ArrayList<SummaryElement> get_list_elem() {return elements;};

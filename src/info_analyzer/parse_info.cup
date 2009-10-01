@@ -46,7 +46,7 @@ valid ::=
 
 toolset ::=
 	FL_TOOLSET FL_NAME:name
-	{: sqa_report.current_test_session.compiler_name = name ; :}
+	{: sqa_report.current_test_session.set_compiler_name(name); :}
 ;
 
 ccversion ::= 

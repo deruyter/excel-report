@@ -1,6 +1,48 @@
 ------------------------------------------------------
                SVNBRANCH CHANGESET
 ------------------------------------------------------
+	Date  :    Thu Oct 01 13:32:35 CEST 2009
+	Author:    dt25
+	Parent:    https://codex.cro.st.com/svnroot/stxp70cc/stxp70-report/trunk
+	Branch:    https://codex.cro.st.com/svnroot/stxp70cc/stxp70-report/branches/dt25/dev-improve-generator
+
+Description:
+------------
+	* cleaning  
+
+
+Modified Files:
+---------------
+	M       src/info_analyzer/parse_info.cup
+	M       src/reporting_tool/sqa_report.java
+	D       src/reporting_tool/Xml_Output.java
+	M       src/reporting_tool/TestSession.java
+	M       src/reporting_tool/Xls_Output.java
+	M       src/reporting_tool/Summary.java
+	D       bin
+
+
+Diff command:
+-------------------------
+"svn diff --old=https://codex.cro.st.com/svnroot/stxp70cc/stxp70-report/trunk@4767 --new=https://codex.cro.st.com/svnroot/stxp70cc/stxp70-report/branches/dt25/dev-improve-generator@4790 --diff-cmd tkdiff" 
+
+
+Merge command:
+-------------------------
+"svn merge https://codex.cro.st.com/svnroot/stxp70cc/stxp70-report/trunk@4767 https://codex.cro.st.com/svnroot/stxp70cc/stxp70-report/branches/dt25/dev-improve-generator@4790" 
+
+Diff links to modified files:
+-----------------------------
+src/info_analyzer/parse_info.cup	http://codex.cro.st.com/svn/viewvc.php/stxp70-report/trunk/src/info_analyzer/parse_info.cup?p2=stxp70-report/branches/dt25/dev-improve-generator/src/info_analyzer/parse_info.cup&r1=4767&r2=4790&roottype=svn&root=stxp70cc&diff_format=h
+src/reporting_tool/sqa_report.java	http://codex.cro.st.com/svn/viewvc.php/stxp70-report/trunk/src/reporting_tool/sqa_report.java?p2=stxp70-report/branches/dt25/dev-improve-generator/src/reporting_tool/sqa_report.java&r1=4767&r2=4790&roottype=svn&root=stxp70cc&diff_format=h
+src/reporting_tool/TestSession.java	http://codex.cro.st.com/svn/viewvc.php/stxp70-report/trunk/src/reporting_tool/TestSession.java?p2=stxp70-report/branches/dt25/dev-improve-generator/src/reporting_tool/TestSession.java&r1=4767&r2=4790&roottype=svn&root=stxp70cc&diff_format=h
+src/reporting_tool/Xls_Output.java	http://codex.cro.st.com/svn/viewvc.php/stxp70-report/trunk/src/reporting_tool/Xls_Output.java?p2=stxp70-report/branches/dt25/dev-improve-generator/src/reporting_tool/Xls_Output.java&r1=4767&r2=4790&roottype=svn&root=stxp70cc&diff_format=h
+src/reporting_tool/Summary.java	http://codex.cro.st.com/svn/viewvc.php/stxp70-report/trunk/src/reporting_tool/Summary.java?p2=stxp70-report/branches/dt25/dev-improve-generator/src/reporting_tool/Summary.java&r1=4767&r2=4790&roottype=svn&root=stxp70cc&diff_format=h
+
+
+------------------------------------------------------
+               SVNBRANCH CHANGESET
+------------------------------------------------------
 	Date  :    Thu Aug 27 10:05:43 CEST 2009
 	Author:    dt25
 	Parent:    https://codex.cro.st.com/svnroot/stxp70cc/stxp70-report/trunk

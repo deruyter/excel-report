@@ -17,7 +17,6 @@ public class sqa_report {
 	public static boolean core_only, ext_only;
 	public static boolean Debug_on;
 	public static boolean Cruise_Control;
-	public static boolean Monitoring;
 	public static TestSession current_test_session;
 	public static Discriminent current_parse_discriminent;
 
@@ -184,7 +183,7 @@ public class sqa_report {
 				compare_options=false;
 				sizes_for_computation.add(Sections.TEXT);
 			} else if (args[i].contentEquals("-monitor")) {
-				Monitoring=true;
+				//Monitoring=true;
 				generate_output_info=false;
 				warn_level=0;
 				compare_options=false;
@@ -193,6 +192,8 @@ public class sqa_report {
 				obj_size=false;
 				bin_size=false;
 				cycle=false;
+				System.out.println("Warning option -monitor not yet implemented");
+				System.exit(0);
 			} else if (args[i].contentEquals("-default")) {
 				warn_level=0;
 				compare_options=false;
@@ -236,7 +237,7 @@ public class sqa_report {
 						rootdata.add_session(line, session_name);
 						myfile.close();
 					} catch (FileNotFoundException e) {
-						System.err.println("WARNING: Directory " + line + " does not contain any INFO");
+						if(!Cruise_Control) System.err.println("WARNING: Directory " + line + " does not contain any INFO");
 					}
 				}
 			}
@@ -307,7 +308,7 @@ public class sqa_report {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		if(obj_size || Monitoring) {
+		if(obj_size) {
 			current_parse_discriminent = Discriminent.SIZE_OBJ;
 			file_to_parse = current_session.path + "/codeSize.txt";
 			try {
@@ -322,14 +323,14 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				System.out.println("Unable to find" + file_to_parse);
+				if(!Cruise_Control) System.out.println("Unable to find" + file_to_parse);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		if(bin_size || Monitoring) {
+		if(bin_size) {
 			current_parse_discriminent = Discriminent.SIZE_BIN;
 			file_to_parse = current_session.path + "/BinaryCodeSize.txt";
 			try {
@@ -344,14 +345,14 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				System.out.println("Unable to find" + file_to_parse);
+				if(!Cruise_Control) System.out.println("Unable to find" + file_to_parse);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		if(func_size || Monitoring) {
+		if(func_size) {
 			file_to_parse = current_session.path + "/BinaryFuncSize.txt";
 			try {
 				if (Debug_on) System.out.println("Parse File : " + file_to_parse);
@@ -365,14 +366,14 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				System.out.println("Unable to find" + file_to_parse);
+				if(!Cruise_Control) System.out.println("Unable to find" + file_to_parse);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		if(cycle || Monitoring) {
+		if(cycle) {
 			file_to_parse = current_session.path + "/cyclesCount.txt";
 			try {
 				if (Debug_on) System.out.println("Parse File : " + file_to_parse);
@@ -386,7 +387,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				System.out.println("Unable to find" + file_to_parse);
+				if(!Cruise_Control) System.out.println("Unable to find" + file_to_parse);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
@@ -395,7 +396,7 @@ public class sqa_report {
 		}			
 	}
 	static void generate_text_summary() {
-		if (obj_size || Monitoring) {
+		if (obj_size) {
 			rootdata.compute_data(Discriminent.SIZE_OBJ);
 			for (int i=0;i<rootdata.get_disc().size();i++) {
 				for (int j=0;j<rootdata.get_nb_sessions();j++) {
@@ -403,7 +404,7 @@ public class sqa_report {
 				}
 			}
 		}
-		if (bin_size||Monitoring) {
+		if (bin_size) {
 	    	rootdata.compute_data(Discriminent.SIZE_BIN);
 			for (int i=0;i<rootdata.get_disc().size();i++) {
 				for (int j=0;j<rootdata.get_nb_sessions();j++) {
@@ -411,7 +412,7 @@ public class sqa_report {
 				}
 			}
 	    }
-	    if (func_size||Monitoring) {
+	    if (func_size) {
 	    	rootdata.compute_data(Discriminent.SIZE_FUNC);
 			for (int i=0;i<rootdata.get_disc().size();i++) {
 				for (int j=0;j<rootdata.get_nb_sessions();j++) {
@@ -419,7 +420,7 @@ public class sqa_report {
 				}
 			}
 	    }
-	    if (cycle||Monitoring) {
+	    if (cycle) {
 	    	rootdata.compute_data(Discriminent.SPEED);
 			for (int i=0;i<rootdata.get_disc().size();i++) {
 				for (int j=0;j<rootdata.get_nb_sessions();j++) {
