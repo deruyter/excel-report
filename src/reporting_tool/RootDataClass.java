@@ -48,7 +48,7 @@ public class RootDataClass {
 		for(int i=0;i<sessions.size();i++) {
 			if (sessions.get(i).path.contentEquals(path) && sessions.get(i).name.contentEquals(name)) {
 				if(sqa_report.warn_level > 0) System.err.println("WARNING: Session "+ name + "%s already given, skipped\n");
-				continue;
+				return;
 			}
 		}
 		sessions.add(new TestSession(path,name));
