@@ -150,6 +150,16 @@ public class Summary {
 				case Audio_CSD :	return CSD_sizes_bin;
 				}
 			}
+			if(disc == Discriminent.SIZE_FUNC) {
+				switch (type) {
+				case Run_Valid :	return sizes_func;
+				case EEMBC_Net :	return NW_sizes_func;
+				case EEMBC_Cons :	return CO_sizes_func;
+				case Bluetooth :	return BT_sizes_func;
+				case Jpeg :			return JPEG_sizes_func;
+				case Audio_CSD :	return CSD_sizes_func;
+				}
+			}
 			return null;
 		}
 
@@ -244,8 +254,8 @@ public class Summary {
 						String.format("%4.4f",moy*100.00));	
 			}
 		}
-		if (CruisControl) System.out.printf("\" />\n<property name=\"%s_%s_obj_size\" value=\"",base.get_name(),Name);
-		else System.out.printf( "\n%14.14s Size Obj |", base.get_name());
+		if (CruisControl) System.out.printf("\" />\n<property name=\"%s_%s_func_size\" value=\"",base.get_name(),Name);
+		else System.out.printf( "\n%14.14s Size Func |", base.get_name());
 		i=0;
 		iter_elem = elements.listIterator(1);
 		while(iter_elem.hasNext()) {
@@ -253,15 +263,15 @@ public class Summary {
 			if(base == compare ) continue;
 			i++;
 			if (i==4 || (i==2 && CruisControl)) break;
-			if (compare.get_size(CommonData.Dump_Type.Run_Valid,Discriminent.SIZE_OBJ).isEmpty()) {
+			if (compare.get_size(CommonData.Dump_Type.Run_Valid,Discriminent.SIZE_FUNC).isEmpty()) {
 				if(CruisControl) 	System.out.printf(" Max Gain: N/A, Max loss:  N/A, Geomean: N/A");
 				else 				System.out.printf(" %.5s / %.5s / %.5s  |","  -  ","  -  ","  -  ");
 			}
 			else {
 				Integer nb_data=0;
 				double sumb=0,sumc=0,min=0,max=0,tmp_val;
-				ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid,Discriminent.SIZE_OBJ).listIterator();
-				ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid,Discriminent.SIZE_OBJ).listIterator();
+				ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid,Discriminent.SIZE_FUNC).listIterator();
+				ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid,Discriminent.SIZE_FUNC).listIterator();
 				while (vb.hasNext() && vc.hasNext()) {
 					Long valb = vb.next();
 					Long valc = vc.next();

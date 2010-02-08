@@ -516,6 +516,19 @@ public class Xls_Output {
 		}
 	}
 
+	private String create_column_name(int offset) {
+		if (offset <= 25) {
+			return String.valueOf((char)('A' + offset));
+		} else if (offset <= 51) {
+			return "A" + String.valueOf((char)('A' + offset - 26));
+		} else if (offset <= 77) {
+			return "B" + String.valueOf((char)('A' + offset - 52));
+		} else if (offset <= 103) {
+			return "C" + String.valueOf((char)('A' + offset - 78));
+		}
+		return null;
+	}
+	
 	private void create_full_page(RootDataClass rootdata,  String name, String title, Discriminent disc, Sections sec){
 		int nb_sessions_to_dump=rootdata.get_nb_sessions();
 		int nb_max_data=rootdata.get_nb_max_data();
@@ -557,20 +570,20 @@ public class Xls_Output {
 		string_cell(rtot,COMP_FIRST_COLUMN-1,BOLDCENTER_STYL_ID,"Total");
 
 		for (i = 0 ; i < nb_sessions_to_dump ; i++) {
-			String reffail = (char)('A' + i + DATA_FIRST_COLUMN) + "$14:"+ (char)('A' + i + DATA_FIRST_COLUMN) +"$" + (HEADER_NB_ROWS + nb_max_data);
+			String reffail = create_column_name(i + DATA_FIRST_COLUMN) + "14:"+ create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
 			// Number of FAILs
 			formula_cell(rfail,i + 1 + NBFAILS_FIRST_COL,"COUNTIF(" + reffail + ",\"FAIL*\")");
 			// Average - Geomean - Min - Max - Median - Total
-			String ref = (char)('A' + i + COMP_FIRST_COLUMN) + "$" + (HEADER_NB_ROWS+1)+ ":"+ (char)('A' + i + COMP_FIRST_COLUMN) +"$" + (HEADER_NB_ROWS + nb_max_data);
+			String ref = create_column_name(i + COMP_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS+1)+ ":"+ create_column_name(i + COMP_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
 			formula_cell(ravg,i+COMP_FIRST_COLUMN,PERCENT_STYL_ID,"AVERAGE(" + ref + ")");
 			formula_cell(rgeo,i+COMP_FIRST_COLUMN,PERCENT_STYL_ID,"GEOMEAN(" + ref + ")");
 			formula_cell(rmin,i+COMP_FIRST_COLUMN,PERCENT_STYL_ID,"MIN(" + ref + ")");
 			formula_cell(rmax,i+COMP_FIRST_COLUMN,PERCENT_STYL_ID,"MAX(" + ref + ")");
 			formula_cell(rmed,i+COMP_FIRST_COLUMN,PERCENT_STYL_ID,"MEDIAN(" + ref + ")");
-			String	right = (char)('A' + i + DATA_FIRST_COLUMN) + "$" + (HEADER_NB_ROWS+1)+ ":" + (char)('A' + i + DATA_FIRST_COLUMN) +"$" + (HEADER_NB_ROWS + nb_max_data);
-			String	left  = (char)('A' + COMP_FIRST_COLUMN-2) + "$" + (HEADER_NB_ROWS+1)+ ":" + (char)('A' + COMP_FIRST_COLUMN-2) +"$" + (HEADER_NB_ROWS + nb_max_data);
+			String	right = create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS+1)+ ":" + create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
+			String	left  = create_column_name(COMP_FIRST_COLUMN-2) + String.valueOf(HEADER_NB_ROWS+1)+ ":" + create_column_name(COMP_FIRST_COLUMN-2) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
 			String formula_any = "SUMIF(" + left + ",\">0\"," + right + ")/SUMIF(" + right + ",\">0\"," + left + ")";
-			String  prev_val = (char)('A' + i -1 + DATA_FIRST_COLUMN) + "$" + (HEADER_NB_ROWS+1)+ ":" + (char)('A' + i -1 + DATA_FIRST_COLUMN) +"$" + (HEADER_NB_ROWS + nb_max_data);
+			String  prev_val = create_column_name(i -1 + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS+1)+ ":" + create_column_name(i -1 + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
 			String formula_prev = "SUMIF(" + prev_val + ",\">0\"," + right + ")/SUMIF(" + right + ",\">0\"," + prev_val + ")";
 			formula_cell(rtot,i+COMP_FIRST_COLUMN,PERCENT_STYL_ID, "IF($B$15=0," + formula_prev + "," + formula_any + ")");
 		}
@@ -603,7 +616,7 @@ public class Xls_Output {
 		// VALUES
 		for (int disc_iter=0;disc_iter<rootdata.get_disc().size();disc_iter++) {
 			int cur_row_number=HEADER_NB_ROWS+disc_iter;
-			String indir_cell = "$" + (char) ('A'+ COMP_FIRST_COLUMN - 2) + "$" + (cur_row_number + 1);
+			String indir_cell = "$" + create_column_name(COMP_FIRST_COLUMN - 2) + String.valueOf(cur_row_number + 1);
 			RootTest my_test =  rootdata.get_disc().get(disc_iter);
 			cur_work_row=computed_sheet.createRow(cur_row_number);
 
@@ -629,11 +642,8 @@ public class Xls_Output {
 				case -1:  string_cell(cur_work_row,DATA_FIRST_COLUMN+j,"No result.");break;
 				default:  number_cell(cur_work_row,DATA_FIRST_COLUMN+j,val); break;
 				}
-				String myvalcell = "$" + (char) ('A'+ DATA_FIRST_COLUMN + j) + "$" + (cur_row_number + 1);
-				String prevvalcell = "$" + (char) ('A'+ DATA_FIRST_COLUMN + j- 1) + "$" + (cur_row_number + 1);
-				/*formula_cell(cur_work_row,COMP_FIRST_COLUMN+j,PERCENT_STYL_ID,
-						"IF(T(" + myvalcell + ")<>\"\"," + myvalcell + ",IF(OR(" + indir_cell + "=0,T(" + indir_cell + ")<>\"\"),\"- \"," + myvalcell + "/" + indir_cell + "))");
-					*/	
+				String myvalcell = "$" + create_column_name(DATA_FIRST_COLUMN + j) + String.valueOf(cur_row_number + 1);
+				String prevvalcell = "$" + create_column_name(DATA_FIRST_COLUMN + j- 1) + String.valueOf(cur_row_number + 1);
 				String vs_anyphase = "IF(T(" + myvalcell + ")<>\"\"," + myvalcell + ",IF(OR(" + indir_cell + "=0,T(" + indir_cell + ")<>\"\"),\"- \"," + myvalcell + "/" + indir_cell + "))";
 				String vs_prevphase = "IF(T(" + myvalcell + ")<>\"\"," + myvalcell + ",IF(OR(" + prevvalcell + "=0,T(" + prevvalcell + ")<>\"\"),\"- \"," + myvalcell + "/" + prevvalcell + "))" ;
 				String full = "IF($B$" + (VERS_NUM_FIRST_ROW+1) + "=0," + vs_prevphase + "," + vs_anyphase + ")";

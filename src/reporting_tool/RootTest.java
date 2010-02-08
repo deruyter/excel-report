@@ -2,7 +2,7 @@ package reporting_tool;
 
 import java.util.ArrayList;
 
-public class RootTest {
+public class RootTest implements java.lang.Comparable {
 	String test;
 	String target;
 	ArrayList<String> options;
@@ -23,4 +23,8 @@ public class RootTest {
 		return false;
 	}
 
+	public int compareTo(Object other) { 
+	      String v1 = ((RootTest) other).get_test(); 
+	      return this.test.compareTo(v1);
+	   } 
 }

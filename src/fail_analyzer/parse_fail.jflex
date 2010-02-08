@@ -32,7 +32,7 @@ ws      = [ \t\f]+
 number	= [0-9]+
 l_sep   = [=]+
 stbegin = [a-zA-Z/]
-string  = [a-zA-Z/-@\-0-9_\.]*
+string  = [a-zA-Z/-@\-0-9_\.\+]*
 
 
 %xstate IGNORE

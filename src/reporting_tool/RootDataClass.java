@@ -68,6 +68,7 @@ public class RootDataClass {
 				}
 			}
 		}
+		java.util.Collections.sort(disc_test);
 	}
 	public void compute_monitored_data(Discriminent disc){
 		cleanup_test_disc();

@@ -28,7 +28,7 @@ newline = \r|\n|\r\n;
 ws      = [ \t\f]+
 number	= [0-9]+
 stbegin = [a-zA-Z_/\.]
-string  = [a-zA-Z/0-9_\.\-@]*
+string  = [a-zA-Z/0-9_\.\-@\+]*
 
 %%
 

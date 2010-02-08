@@ -13,7 +13,7 @@ import info_analyzer.*;
 import fail_analyzer.*;
 
 public class sqa_report {
-	public static int warn_level;
+	public static int warn_level = 1;
 	public static boolean core_only, ext_only;
 	public static boolean Debug_on;
 	public static boolean Cruise_Control;
@@ -232,12 +232,21 @@ public class sqa_report {
 						session_name = line.substring(line.lastIndexOf("/")+1,line.length());
 					}
 					line = line + "/" + key_name;
-					try {
-						FileReader myfile = new FileReader(line + "/INFO");
-						rootdata.add_session(line, session_name);
-						myfile.close();
-					} catch (FileNotFoundException e) {
-						if(!Cruise_Control) System.err.println("WARNING: Directory " + line + " does not contain any INFO");
+					if (Cruise_Control) {
+						try {
+							FileReader myfile = new FileReader(line + "/BANNER");
+							rootdata.add_session(line, session_name);
+							myfile.close();
+						} catch (FileNotFoundException e) {
+						}
+					} else {
+						try {
+							FileReader myfile = new FileReader(line + "/INFO");
+							rootdata.add_session(line, session_name);
+							myfile.close();
+						} catch (FileNotFoundException e) {
+							System.err.println("WARNING: Directory " + line + " does not contain any INFO");
+						}
 					}
 				}
 			}
