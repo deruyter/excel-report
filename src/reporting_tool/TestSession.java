@@ -235,6 +235,9 @@ public class TestSession {
 						break;
 					}
 				}
+				if (object.contains("th_lite")) {
+					my_string_target = "lib" ;
+				}
 				my_string_target = my_string_target.replace(".o", "");
 				my_string_target = my_string_target.replace(".u.po.ipakeep", "");
 				my_string_target = my_string_target.replace("_lite", "");

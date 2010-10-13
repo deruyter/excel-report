@@ -199,11 +199,7 @@ public class Summary {
 		int i=0;
 		base = elements.get(0);
 		if(!CruisControl) System.out.printf( "%22.22s  |", "");
-		if (CruisControl) {
-			if (elements.size() < 2) System.out.printf("<property name=\"%s_%s_compiler\" value=\"0\"/>\n",base.get_name(),Name);
-			else System.out.printf("<property name=\"%s_%s_compiler\" value=\"%s\"/>\n",base.get_name(),Name,get_version_num(elements.get(1).get_cc_name()));
-			System.out.printf("<property name=\"%s_%s_cycles\" value=\"",base.get_name(),Name);
-		}
+		if (CruisControl) System.out.printf("<property name=\"%s_%s_cycles\" value=\"",base.get_name(),Name);
 		ListIterator<SummaryElement> iter_elem = elements.listIterator(1);
 		while(iter_elem.hasNext()) {
 			compare = iter_elem.next();
@@ -336,12 +332,5 @@ public class Summary {
 		else System.out.printf( "\n");
 	}
 	
-	private String get_version_num(String name) {
-		Integer i = name.length()-1;
-		//System.out.println("String version = " + name);
-		while (Character.isDigit(name.charAt(i))) i--;  
-		return name.substring(i+1);
-	}
-
 	public ArrayList<SummaryElement> get_list_elem() {return elements;};
 }

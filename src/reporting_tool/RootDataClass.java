@@ -62,9 +62,8 @@ public class RootDataClass {
 				Test mytest = mysession.get_tests(disc).get(j);
 				if (sqa_report.core_only && CommonData.is_extension_info(mytest.name))  continue;
 				if (sqa_report.ext_only && !CommonData.is_extension_info(mytest.name))  continue;
-				for(int k=0;k<mytest.get_target().size();k++) { 
+				for(int k=0;k<mytest.get_target().size();k++) {
 					add_test_disc(mytest.name,mytest.get_target().get(k).name, mysession.compiler_flags);
-					//printf("DISC: %s, %s\n",(*test)->get_name(),(*target)->get_name());
 				}
 			}
 		}
@@ -77,7 +76,6 @@ public class RootDataClass {
 			Test mytest = mysession.get_tests(disc).get(j);
 			for(int k=0;k<mytest.get_target().size();k++) { 
 				add_test_disc(mytest.name,mytest.get_target().get(k).name, mysession.compiler_flags);
-				//  printf("DISC: %s, %s\n",(*test)->get_name(),(*target)->get_name());
 			}
 		}
 	}

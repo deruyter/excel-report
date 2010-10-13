@@ -17,6 +17,7 @@ public class sqa_report {
 	public static boolean core_only, ext_only;
 	public static boolean Debug_on;
 	public static boolean Cruise_Control;
+	public static boolean Hudson;
 	public static TestSession current_test_session;
 	public static Discriminent current_parse_discriminent;
 
@@ -177,6 +178,11 @@ public class sqa_report {
 				Debug_on=true;
 			} else if (args[i].contentEquals("-old_style")) {
 				new_mode=false;
+			} else if (args[i].contentEquals("-hudson")) {
+				Hudson=true;
+				warn_level=0;
+				compare_options=false;
+				sizes_for_computation.add(Sections.TEXT);
 			} else if (args[i].contentEquals("-cruisec")) {
 				Cruise_Control=true;
 				warn_level=0;
@@ -232,7 +238,7 @@ public class sqa_report {
 						session_name = line.substring(line.lastIndexOf("/")+1,line.length());
 					}
 					line = line + "/" + key_name;
-					if (Cruise_Control) {
+					if (Cruise_Control || Hudson) {
 						try {
 							FileReader myfile = new FileReader(line + "/BANNER");
 							rootdata.add_session(line, session_name);
@@ -332,7 +338,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if(!Cruise_Control) System.out.println("Unable to find" + file_to_parse);
+				if(!Cruise_Control && !Hudson) System.out.println("Unable to find" + file_to_parse);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
@@ -354,7 +360,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if(!Cruise_Control) System.out.println("Unable to find" + file_to_parse);
+				if(!Cruise_Control && Hudson) System.out.println("Unable to find" + file_to_parse);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
@@ -375,7 +381,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if(!Cruise_Control) System.out.println("Unable to find" + file_to_parse);
+				if(!Cruise_Control && !Hudson) System.out.println("Unable to find" + file_to_parse);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
@@ -396,7 +402,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if(!Cruise_Control) System.out.println("Unable to find" + file_to_parse);
+				if(!Cruise_Control && !Hudson) System.out.println("Unable to find" + file_to_parse);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
@@ -405,6 +411,7 @@ public class sqa_report {
 		}			
 	}
 	static void generate_text_summary() {
+		if (Debug_on) System.out.println("generate_text_summary #1");
 		if (obj_size) {
 			rootdata.compute_data(Discriminent.SIZE_OBJ);
 			for (int i=0;i<rootdata.get_disc().size();i++) {
@@ -413,6 +420,7 @@ public class sqa_report {
 				}
 			}
 		}
+		if (Debug_on) System.out.println("generate_text_summary #2");
 		if (bin_size) {
 	    	rootdata.compute_data(Discriminent.SIZE_BIN);
 			for (int i=0;i<rootdata.get_disc().size();i++) {
@@ -421,6 +429,7 @@ public class sqa_report {
 				}
 			}
 	    }
+		if (Debug_on) System.out.println("generate_text_summary #3");
 	    if (func_size) {
 	    	rootdata.compute_data(Discriminent.SIZE_FUNC);
 			for (int i=0;i<rootdata.get_disc().size();i++) {
@@ -429,14 +438,19 @@ public class sqa_report {
 				}
 			}
 	    }
+		if (Debug_on) System.out.println("generate_text_summary #4");
 	    if (cycle) {
+			if (Debug_on) System.out.println("generate_text_summary #4.1");
 	    	rootdata.compute_data(Discriminent.SPEED);
+			if (Debug_on) System.out.println("generate_text_summary #4.2");
 			for (int i=0;i<rootdata.get_disc().size();i++) {
 				for (int j=0;j<rootdata.get_nb_sessions();j++) {
 					summary.add_summary_value(rootdata.get_session(j).path,rootdata.get_session(j).name,rootdata.get_disc().get(i).get_test(),Discriminent.SPEED,rootdata.get_session(j).get_cycle(rootdata.get_disc().get(i)));
 				}
 			}
+			if (Debug_on) System.out.println("generate_text_summary #4.3");
 	    }
+	    if (Debug_on) System.out.println("generate_text_summary #5");
 	}
 
 	/**
@@ -466,11 +480,14 @@ public class sqa_report {
 			parse_session(rootdata.get_session(i));
 		}
 		/*End Parsing Phase*/
+		
+		if (Debug_on) System.out.println("Parsing phase done");
 		/*Start Processing phase*/
 		if (output_file_name == null)	output_xls = new Xls_Output("default_output.xls");
 		else output_xls = new Xls_Output(output_file_name);
 		output_xls.generate_header();
 		output_xls.create_summary(rootdata);		
+		if (Debug_on) System.out.println("Summary phase done");
 		
 		rootdata.remove_ignored_flags(compare_options);
 		if (sizes_for_computation.isEmpty()) { 
@@ -482,8 +499,10 @@ public class sqa_report {
 			summary.add_session(rootdata.get_session(i).path, rootdata.get_session(i).name);
 		}
 
+		if (Debug_on) System.out.println("Compute1 phase done");
 		/* Generate summary */
 		generate_text_summary();
+		if (Debug_on) System.out.println("Summary text phase done");
 
 		/*Size sheet generation*/
 		if (obj_size) {
@@ -494,6 +513,8 @@ public class sqa_report {
 				
 			}
 		}
+		if (Debug_on) System.out.println("Obj phase done");
+
 		if (bin_size) {
 			rootdata.compute_data(Discriminent.SIZE_BIN);
 			for (i=0; i< sizes_for_computation.size(); i++) {
@@ -502,6 +523,7 @@ public class sqa_report {
 			}
 		}
 
+		if (Debug_on) System.out.println("Bin phase done");
 		if (func_size) {
 			rootdata.compute_data(Discriminent.SIZE_FUNC);
 			for (i=0; i< sizes_for_computation.size(); i++) {
@@ -514,14 +536,18 @@ public class sqa_report {
 				if (new_mode) output_xls.create_new_page(rootdata, Discriminent.SIZE_APPLI, sizes_for_computation.get(i));
 			}
 		}
-		
+		if (Debug_on) System.out.println("Func phase done");
+
 		/*Speed sheet generation*/
 		if (cycle) {
+			if (Debug_on) System.out.println("generate cycle #1");
 			rootdata.compute_data(Discriminent.SPEED);
+			if (Debug_on) System.out.println("generate cycle #2");
 			if (!new_mode) output_xls.create_page(rootdata, Discriminent.SPEED, Sections.LAST_SECTION);
 			if (new_mode) output_xls.create_new_page(rootdata, Discriminent.SPEED, Sections.LAST_SECTION);
 		}
 
+		if (Debug_on) System.out.println("Cycles phase done");
 		output_xls.excel_terminate();
 		if (generate_output_info) {
 			if(Cruise_Control) {
