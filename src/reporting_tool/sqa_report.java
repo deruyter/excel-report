@@ -553,7 +553,10 @@ public class sqa_report {
 			if(Cruise_Control) {
 				if(ref_file.contains("branch"))	summary.dump_summary(true,"branch");
 				else                            summary.dump_summary(true,"ref");
-			}
+			} else if (Hudson) {
+				if(ref_file.contains("branch"))	summary.dump_hudson_summary("branch",output_file_name);
+				else                            summary.dump_hudson_summary("ref",output_file_name);
+                        }
 			else summary.dump_summary(false,"");
 		}
 	}
