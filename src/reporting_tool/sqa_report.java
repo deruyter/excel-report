@@ -294,7 +294,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException er) {
-				System.out.println("Unable to find" + file_to_parse);
+				if(!Cruise_Control && !Hudson) System.out.println("Unable to find " + file_to_parse);
 			} catch (IOException er) {
 				e.printStackTrace();
 			} catch (Exception er) {
@@ -360,7 +360,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if(!Cruise_Control && Hudson) System.out.println("Unable to find" + file_to_parse);
+				if(!Cruise_Control && !Hudson) System.out.println("Unable to find" + file_to_parse);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
