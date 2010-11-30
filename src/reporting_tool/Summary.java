@@ -341,10 +341,11 @@ public class Summary {
         base = elements.get(0);
         compare = null;
         while (iter_elem.hasNext()) {
-            if (base == iter_elem.next()) {
+        	compare = iter_elem.next();
+            if (base == compare) {
+            	compare=null;
                 continue;
             } else {
-                compare = iter_elem.next();
                 break;
             }
         }
@@ -353,7 +354,7 @@ public class Summary {
         Boolean size_func_compute = !compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).isEmpty();
         Boolean size_obj_compute = !compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).isEmpty();
         Boolean size_bin_compute = !compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).isEmpty();
-        Boolean size_appli_compute = !compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).isEmpty();
+        Boolean size_appli_compute = false;//!compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).isEmpty();
         // Print header
         System.out.printf("<table>\n <tr>\n");
         System.out.printf("<td value =\"%s\" fontattribute=\"bold\" href=\"artifacts/%s\"/>\n", base.get_name(), filename);
