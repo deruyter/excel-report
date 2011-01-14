@@ -333,6 +333,16 @@ public class Summary {
         return list;
     }
 
+    static final String green_code="#04B404";
+    static final String red_code="#FF0000";
+    static final String black_code="#000000";
+        
+    private String get_color_code(double val) {
+        if (val > 0.0) return red_code;
+        if (val < 0.0) return green_code;
+        return black_code;
+    }
+
 
     public void dump_hudson_summary(String Name, String filename) {
         SummaryElement base, compare;
@@ -357,58 +367,58 @@ public class Summary {
         Boolean size_appli_compute = false;//!compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).isEmpty();
         // Print header
         System.out.printf("<table>\n<tr>\n");
-        System.out.printf("<td value=\"%s\" bgcolor=\"red\" fontcolor=\"black\" fontattribute=\"bold\" href=\"artifact/artifacts/%s\" width=\"200\" align=\"center\"/>\n", base.get_name(), filename);
+        System.out.printf("<td value=\"%s\" bgcolor=\"#BDBDBD\" fontcolor=\"#000000\" fontattribute=\"bold\" href=\"artifact/artifacts/%s\" width=\"200\" align=\"center\"/>\n", base.get_name(), filename);
         if (cycle_compute) {
-            System.out.printf("<td value=\"Cycles\" bgcolor=\"white\" fontcolor=\"blue\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
+            System.out.printf("<td value=\"Cycles\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
             ListIterator<Long> vb = base.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();
             ListIterator<Long> vc = compare.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();
             cycle_list = compute_min_max_moy(vb, vc);
         }
         if (size_func_compute) {
-           System.out.printf("<td value=\"Function Size\" bgcolor=\"white\" fontcolor=\"blue\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
+           System.out.printf("<td value=\"Function Size\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).listIterator();
            sf_list = compute_min_max_moy(vb, vc);
         }
         if (size_obj_compute) {
-           System.out.printf("<td value=\"Object Size\" bgcolor=\"white\" fontcolor=\"blue\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
+           System.out.printf("<td value=\"Object Size\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).listIterator();
            so_list = compute_min_max_moy(vb, vc);
         }
         if (size_bin_compute) {
-           System.out.printf("<td value=\"Binary Size\" bgcolor=\"white\" fontcolor=\"blue\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
+           System.out.printf("<td value=\"Binary Size\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).listIterator();
            sb_list = compute_min_max_moy(vb, vc);
         }
         if (size_appli_compute) {
-           System.out.printf("<td value=\"Appli Size\" bgcolor=\"white\" fontcolor=\"blue\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
+           System.out.printf("<td value=\"Appli Size\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).listIterator();
            sa_list = compute_min_max_moy(vb, vc);
         }
         System.out.printf("</tr>\n<tr>\n");
-        System.out.printf("<td value=\"Max gain\" bgcolor=\"grey\" fontcolor=\"black\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
-        if (cycle_compute)      System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", cycle_list.get(0)*100);
-        if (size_func_compute)  System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sf_list.get(0)*100);
-        if (size_obj_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", so_list.get(0)*100);
-        if (size_bin_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sb_list.get(0)*100);
-        if (size_appli_compute) System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sa_list.get(0)*100);
+        System.out.printf("<td value=\"Max gain\" bgcolor=\"#BDBDBD\" fontcolor=\"#000000\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
+        if (cycle_compute)      System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", cycle_list.get(0)*100,get_color_code(cycle_list.get(0)));
+        if (size_func_compute)  System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sf_list.get(0)*100,get_color_code(sf_list.get(0)));
+        if (size_obj_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", so_list.get(0)*100,get_color_code(so_list.get(0)));
+        if (size_bin_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sb_list.get(0)*100,get_color_code(sb_list.get(0)));
+        if (size_appli_compute) System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sa_list.get(0)*100,get_color_code(sa_list.get(0)));
         System.out.printf("</tr>\n<tr>\n");
-        System.out.printf("<td value=\"Max loss\" bgcolor=\"grey\" fontcolor=\"black\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
-        if (cycle_compute)      System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", cycle_list.get(1)*100);
-        if (size_func_compute)  System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sf_list.get(1)*100);
-        if (size_obj_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", so_list.get(1)*100);
-        if (size_bin_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sb_list.get(1)*100);
-        if (size_appli_compute) System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sa_list.get(1)*100);
+        System.out.printf("<td value=\"Max loss\" bgcolor=\"#BDBDBD\" fontcolor=\"#000000\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
+        if (cycle_compute)      System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", cycle_list.get(1)*100,get_color_code(cycle_list.get(1)));
+        if (size_func_compute)  System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sf_list.get(1)*100,get_color_code(sf_list.get(1)));
+        if (size_obj_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", so_list.get(1)*100,get_color_code(so_list.get(1)));
+        if (size_bin_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sb_list.get(1)*100,get_color_code(sb_list.get(1)));
+        if (size_appli_compute) System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sa_list.get(1)*100,get_color_code(sa_list.get(1)));
         System.out.printf("</tr>\n<tr>\n");
-        System.out.printf("<td value=\"Geomean\" bgcolor=\"grey\" fontcolor=\"black\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
-        if (cycle_compute)      System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", cycle_list.get(2)*100);
-        if (size_func_compute)  System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sf_list.get(2)*100);
-        if (size_obj_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", so_list.get(2)*100);
-        if (size_bin_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sb_list.get(2)*100);
-        if (size_appli_compute) System.out.printf("<td value=\"%4.4f\" bgcolor=\"white\" fontcolor=\"black\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sa_list.get(2)*100);
+        System.out.printf("<td value=\"Geomean\" bgcolor=\"#BDBDBD\" fontcolor=\"#000000\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
+        if (cycle_compute)      System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", cycle_list.get(2)*100,get_color_code(cycle_list.get(2)));
+        if (size_func_compute)  System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sf_list.get(2)*100,get_color_code(sf_list.get(2)));
+        if (size_obj_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", so_list.get(2)*100,get_color_code(so_list.get(2)));
+        if (size_bin_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sb_list.get(2)*100,get_color_code(sb_list.get(2)));
+        if (size_appli_compute) System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\" fontattribute=\"normal\" width=\"100\" align=\"center\"/>\n", sa_list.get(2)*100,get_color_code(sa_list.get(2)));
         System.out.printf("</tr>\n</table>\n");
     }
 
