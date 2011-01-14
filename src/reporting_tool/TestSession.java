@@ -189,7 +189,7 @@ public class TestSession {
 			if(sqa_report.warn_level >= 2) 
 				System.err.println("WARNING: Size value for test "+ test_name + " target " + target + " section " + section_name(sec) + " already given\n");
 		}
-		mytarget.set_size(sec, size);
+		mytarget.set_size(sec, current_tgt_size + size);
 	}
 
 	public void add_test_func_size(String test_name, String target, String object,	String function, int size, boolean aggregated) {

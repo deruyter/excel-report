@@ -68,6 +68,7 @@ public class sqa_report {
 	static void decode_section(String string) {
 		if (string.contentEquals("text")) {
 			sizes_for_computation.add(Sections.TEXT);
+			sizes_for_computation.add(Sections.EXCEPT_TABLE);
 			return;
 		}
 		if (string.contentEquals("data")) {
@@ -554,9 +555,13 @@ public class sqa_report {
 				if(ref_file.contains("branch"))	summary.dump_summary(true,"branch");
 				else                            summary.dump_summary(true,"ref");
 			} else if (Hudson) {
-				if(ref_file.contains("branch"))	summary.dump_hudson_summary("branch",output_file_name);
-				else                            summary.dump_hudson_summary("ref",output_file_name);
-                        }
+				String tmp_str=output_file_name; 
+				if (output_file_name.lastIndexOf("/") > 0) {
+					tmp_str = output_file_name.substring(output_file_name.lastIndexOf("/")+1,output_file_name.length());
+				}
+				if(ref_file.contains("branch"))	summary.dump_hudson_summary("branch",tmp_str);
+				else                            summary.dump_hudson_summary("ref",tmp_str);
+            }
 			else summary.dump_summary(false,"");
 		}
 	}

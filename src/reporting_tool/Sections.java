@@ -52,5 +52,6 @@ public enum Sections {
 	ROBASE,
 	TOTAL,
 	RODATA_PLUS_TEXT,
+	EXCEPT_TABLE,
 	LAST_SECTION
 }

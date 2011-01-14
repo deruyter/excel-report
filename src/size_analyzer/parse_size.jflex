@@ -39,6 +39,9 @@ string  = [a-zA-Z/0-9_\.\-@\+]*
 ";"                         {return symbol(sym.FL_SEPARATE);}
 ","                         {return symbol(sym.FL_COMA);}
 ".text"                     {return symbol(sym.FL_SECTION,Sections.TEXT);}
+".gnu.linkonce.t"           {return symbol(sym.FL_SECTION,Sections.TEXT);}
+".except_table"             {return symbol(sym.FL_SECTION,Sections.EXCEPT_TABLE);}
+".except_table_supp"        {return symbol(sym.FL_SECTION,Sections.EXCEPT_TABLE);}
 ".bss1"                     {return symbol(sym.FL_SECTION,Sections.BSS);}
 ".bss2"                     {return symbol(sym.FL_SECTION,Sections.BSS);}
 ".bss4"                     {return symbol(sym.FL_SECTION,Sections.BSS);}
