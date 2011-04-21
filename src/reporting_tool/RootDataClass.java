@@ -1,7 +1,10 @@
 package reporting_tool;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class RootDataClass {
 
@@ -116,8 +119,17 @@ public class RootDataClass {
         ignored_flags.add(name);
     }
 
-    public HashMap<String, ArrayList<RootTest>>  get_disc() {
+//    public HashMap<String, ArrayList<RootTest>>  get_disc() {
 //            ArrayList<RootTest> get_disc() {
-        return disc_test;
+    public ArrayList<RootTest>  get_disc() {
+        Collection<ArrayList<RootTest>> c = disc_test.values();
+        Iterator<ArrayList<RootTest>> itr = c.iterator();
+        ArrayList<RootTest> full_list = new ArrayList<RootTest>();
+        while (itr.hasNext()) {
+            ArrayList<RootTest> my_tests = (ArrayList<RootTest>) itr.next();
+        	full_list.addAll(my_tests);
+        }
+        Collections.sort(full_list);
+        return full_list;
     }
 }

@@ -160,7 +160,7 @@ public class TestSession {
 		if(target.contains( "Check.o")) return;
 		if(target.startsWith("./")) target.replace("./","");
 
-		String local_test_name = compute_size_test_target_name(test_name,target);
+		String local_test_name = compute_size_test_target_name(test_name.toLowerCase(),target);
 
 		Test current_test=null;
 		for (int i=0; i<get_tests(disc).size();i++) {
@@ -217,7 +217,7 @@ public class TestSession {
 			object = object.substring(0,object.lastIndexOf(".."));
 		}
 
-		String tmp_test_name = compute_size_test_target_name(test_name,object);
+		String tmp_test_name = compute_size_test_target_name(test_name.toLowerCase(),object);
 		Test current_test=null;
 		String local_test_name; 
 		if (my_string_target.contains("src/")) {
@@ -304,12 +304,12 @@ public class TestSession {
 
 	public void add_cycle_count(String name, Long value) {
 		for (int i=0; i<speed_tests.size();i++) {
-			if (speed_tests.get(i).name.contentEquals(name)) {
+			if (speed_tests.get(i).name.contentEquals(name.toLowerCase())) {
 				if (sqa_report.warn_level > 0) System.err.println("WARNING: Test suit " + name + " already given, skipped\n"); 
 				return;
 			}
 		}
-		String local_test_name = compute_test_and_target_name(name);
+		String local_test_name = compute_test_and_target_name(name.toLowerCase());
 		Test mytest = find_test(local_test_name,Discriminent.SPEED);
 		if (mytest == null) mytest =  new Test(local_test_name);
 		speed_tests.add(mytest);
@@ -322,24 +322,24 @@ public class TestSession {
 	private String compute_test_and_target_name(String name) {
 		if (name.contains("eembc_v")) {
 			target_name = name.substring(name.lastIndexOf("--")+2);
-			if (name.contains("Consumer"))    return "eembc_consumer";
-			if (name.contains("Networking"))  return "eembc_networking";
-			if (name.contains("Telecom"))     return "eembc_telecom";
-			if (name.contains("Automotive"))  return "eembc_automotive";
+			if (name.contains("consumer"))    return "eembc_consumer";
+			if (name.contains("networking"))  return "eembc_networking";
+			if (name.contains("telecom"))     return "eembc_telecom";
+			if (name.contains("automotive"))  return "eembc_automotive";
 		} 
 		if (name.contains("--")) {
 			target_name = name.substring(name.lastIndexOf("--")+2);
-			if (name.contains("LAO-Kernels")) {
+			if (name.contains("lao-kernels")) {
 				if (target_name.contains(" ")) {
 					target_name = target_name.substring(0,target_name.lastIndexOf(" "));
 				}
-				return "LAO-Kernels";
+				return "lao-kernels";
 			}
-			if (name.contains("QMx_mixer")) {
+			if (name.contains("qmx_mixer")) {
 				target_name = target_name.substring(0, target_name.length()-6);
-				return "QMx_mixer";
+				return "qmx_mixer";
 			}
-			if (name.contains("PStone") || name.contains("diagnostics") || name.contains("Audio_speech")) {
+			if (name.contains("pstone") || name.contains("diagnostics") || name.contains("audio_speech")) {
 				if (name.contains("/")) 
 					target_name = target_name.substring(0,target_name.indexOf("/"));
 				return name.substring(0,name.indexOf("--"));
@@ -366,57 +366,57 @@ public class TestSession {
 		if(name.contains("valid_extension") || name.contains("valid-extensions")) {
 			if(extension_built) return;
 			extension_built=true;
-			obj_size_tests.add(new Test("TSTx_test"));
+			obj_size_tests.add(new Test("tstx_test"));
 			obj_size_tests.add(new Test("vx2_fgtdec"));
 			obj_size_tests.add(new Test("vx2_test_memspace"));
-			obj_size_tests.add(new Test("TS3x_test"));
-			obj_size_tests.add(new Test("admX_AppliUsingadmX"));
-			obj_size_tests.add(new Test("TS2x_test"));
-			obj_size_tests.add(new Test("QMx_farrow_interpolator"));
-			obj_size_tests.add(new Test("QMx_mixer"));
-			obj_size_tests.add(new Test("Tx_CSD_extension_test"));
-			obj_size_tests.add(new Test("MP1v_viterbi"));
-			obj_size_tests.add(new Test("Fx_SampleRate"));
-			obj_size_tests.add(new Test("TS4x_test"));
+			obj_size_tests.add(new Test("ts3x_test"));
+			obj_size_tests.add(new Test("admx_appliusingadmx"));
+			obj_size_tests.add(new Test("ts2x_test"));
+			obj_size_tests.add(new Test("qmx_farrow_interpolator"));
+			obj_size_tests.add(new Test("qmx_mixer"));
+			obj_size_tests.add(new Test("tx_csd_extension_test"));
+			obj_size_tests.add(new Test("mp1v_viterbi"));
+			obj_size_tests.add(new Test("fx_samplerate"));
+			obj_size_tests.add(new Test("ts4x_test"));
 
-			bin_size_tests.add(new Test("TSTx_test"));
+			bin_size_tests.add(new Test("tstx_test"));
 			bin_size_tests.add(new Test("vx2_fgtdec"));
 			bin_size_tests.add(new Test("vx2_test_memspace"));
-			bin_size_tests.add(new Test("TS3x_test"));
-			bin_size_tests.add(new Test("admX_AppliUsingadmX"));
+			bin_size_tests.add(new Test("ts3x_test"));
+			bin_size_tests.add(new Test("admx_appliusingadmx"));
 			bin_size_tests.add(new Test("TS2x_test"));
-			bin_size_tests.add(new Test("QMx_farrow_interpolator"));
-			bin_size_tests.add(new Test("QMx_mixer"));
-			bin_size_tests.add(new Test("Tx_CSD_extension_test"));
-			bin_size_tests.add(new Test("MP1v_viterbi"));
-			bin_size_tests.add(new Test("Fx_SampleRate"));
-			bin_size_tests.add(new Test("TS4x_test"));
+			bin_size_tests.add(new Test("qmx_farrow_interpolator"));
+			bin_size_tests.add(new Test("qmx_mixer"));
+			bin_size_tests.add(new Test("tx_csd_extension_test"));
+			bin_size_tests.add(new Test("mp1v_viterbi"));
+			bin_size_tests.add(new Test("fx_samplerate"));
+			bin_size_tests.add(new Test("ts4x_test"));
 
-			func_size_tests.add(new Test("TSTx_test"));
+			func_size_tests.add(new Test("tstx_test"));
 			func_size_tests.add(new Test("vx2_fgtdec"));
 			func_size_tests.add(new Test("vx2_test_memspace"));
-			func_size_tests.add(new Test("TS3x_test"));
-			func_size_tests.add(new Test("admX_AppliUsingadmX"));
-			func_size_tests.add(new Test("TS2x_test"));
-			func_size_tests.add(new Test("QMx_farrow_interpolator"));
-			func_size_tests.add(new Test("QMx_mixer"));
-			func_size_tests.add(new Test("Tx_CSD_extension_test"));
-			func_size_tests.add(new Test("MP1v_viterbi"));
-			func_size_tests.add(new Test("Fx_SampleRate"));
-			func_size_tests.add(new Test("TS4x_test"));
+			func_size_tests.add(new Test("ts3x_test"));
+			func_size_tests.add(new Test("admx_appliusingadmx"));
+			func_size_tests.add(new Test("ts2x_test"));
+			func_size_tests.add(new Test("qmx_farrow_interpolator"));
+			func_size_tests.add(new Test("qmx_mixer"));
+			func_size_tests.add(new Test("tx_csd_extension_test"));
+			func_size_tests.add(new Test("mp1v_viterbi"));
+			func_size_tests.add(new Test("fx_samplerate"));
+			func_size_tests.add(new Test("ts4x_test"));
 
-			appli_size_tests.add(new Test("TSTx_test"));
+			appli_size_tests.add(new Test("tstx_test"));
 			appli_size_tests.add(new Test("vx2_fgtdec"));
 			appli_size_tests.add(new Test("vx2_test_memspace"));
-			appli_size_tests.add(new Test("TS3x_test"));
-			appli_size_tests.add(new Test("admX_AppliUsingadmX"));
-			appli_size_tests.add(new Test("TS2x_test"));
-			appli_size_tests.add(new Test("QMx_farrow_interpolator"));
-			appli_size_tests.add(new Test("QMx_mixer"));
-			appli_size_tests.add(new Test("Tx_CSD_extension_test"));
-			appli_size_tests.add(new Test("MP1v_viterbi"));
-			appli_size_tests.add(new Test("Fx_SampleRate"));
-			appli_size_tests.add(new Test("TS4x_test"));
+			appli_size_tests.add(new Test("ts3x_test"));
+			appli_size_tests.add(new Test("admx_appliusingadmx"));
+			appli_size_tests.add(new Test("ts2x_test"));
+			appli_size_tests.add(new Test("qmx_farrow_interpolator"));
+			appli_size_tests.add(new Test("qmx_mixer"));
+			appli_size_tests.add(new Test("tx_csd_extension_test"));
+			appli_size_tests.add(new Test("mp1v_viterbi"));
+			appli_size_tests.add(new Test("fx_samplerate"));
+			appli_size_tests.add(new Test("ts4x_test"));
 			return;
 		}
 
@@ -465,6 +465,7 @@ public class TestSession {
 			if (has_failed(tests.get_test(),tests.get_target()))  return   CommonData.HAS_FAILED;
 			return -1;  
 		}
+		
 		Target mytg = mytst.find_target(tests.get_target());
 		if (mytg==null) {
 			if (has_failed(tests.get_test(),tests.get_target()))  return   CommonData.HAS_FAILED;
