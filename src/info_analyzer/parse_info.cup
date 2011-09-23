@@ -27,16 +27,16 @@ parser code {:
 
 
 terminal FL_VALID, FL_TOOLSET, FL_VERSION, FL_SIMU, FL_SIM_FLAGS, FL_COMP_FLAGS, FL_MACHINE_NAME;
-terminal FL_DAY, FL_MODE, FL_LOGDIR, FL_TESTS;
+terminal FL_DAY, FL_MODE, FL_LOGDIR, FL_TESTS, FL_PROF;
 terminal String FL_NAME,FL_DATE,FL_OPTION;
 terminal Integer FL_MONTH,FL_NUMBER;
-non terminal info_file, valid, toolset, ccversion;
+non terminal info_file, valid, toolset, ccversion, profiling;
 non terminal simversion, ccflags, ccopt_list, simflags, sim_name_list;
 non terminal mode, logdir, tests, name_list;
 
 /************** Grammar begin ***************/
 info_file ::= 
-	valid toolset ccversion simversion ccflags simflags mode logdir tests
+	valid toolset ccversion simversion ccflags profiling simflags mode logdir tests
 ;
 
 valid ::=
@@ -64,6 +64,11 @@ simversion ::=
 ccflags ::=
 	FL_COMP_FLAGS
 	|FL_COMP_FLAGS ccopt_list
+;
+
+profiling ::=
+	FL_PROF FL_COMP_FLAGS ccopt_list FL_COMP_FLAGS ccopt_list 
+	|
 ;
 
 ccopt_list ::=

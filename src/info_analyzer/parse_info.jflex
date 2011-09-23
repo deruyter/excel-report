@@ -84,7 +84,9 @@ string         = [a-zA-Z/-@\-0-9_\.]*
 "logdir"{ws}":"        	{return symbol(sym.FL_LOGDIR);}
 "tests"{ws}":"         	{return symbol(sym.FL_TESTS);}
 "short double"         	{return symbol(sym.FL_NAME,yytext());}
-
+"profiling  activated"{ws}":" { return symbol(sym.FL_PROF);}
+"Pass 1 flags"{ws}":" { yybegin(COMPFLAGS);return symbol(sym.FL_COMP_FLAGS);}
+"Pass 2 flags"{ws}":" { yybegin(COMPFLAGS);return symbol(sym.FL_COMP_FLAGS);}
 
 "|"|":"|"| - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" { /* ignore */ }
 

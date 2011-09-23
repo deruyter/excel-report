@@ -346,6 +346,7 @@ public class Summary {
 
     public void dump_hudson_summary(String Name, String filename) {
         SummaryElement base, compare;
+        String tagname=Name;
         ArrayList<Double> cycle_list = null, so_list = null, sf_list = null, sb_list = null, sa_list = null;
         ListIterator<SummaryElement> iter_elem = elements.listIterator(1);
         base = elements.get(0);
@@ -360,6 +361,7 @@ public class Summary {
             }
         }
         if (compare == null) return;
+        if (Name == null || Name.isEmpty()) tagname=base.get_name();
         Boolean cycle_compute = !compare.get_cycles(CommonData.Dump_Type.Run_Valid).isEmpty();
         Boolean size_func_compute = !compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).isEmpty();
         Boolean size_obj_compute = !compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).isEmpty();
@@ -367,7 +369,7 @@ public class Summary {
         Boolean size_appli_compute = false;//!compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).isEmpty();
         // Print header
         System.out.printf("<table>\n<tr>\n");
-        System.out.printf("<td value=\"%s\" bgcolor=\"#BDBDBD\" fontcolor=\"#000000\" fontattribute=\"bold\" href=\"artifact/artifacts/%s\" width=\"200\" align=\"center\"/>\n", base.get_name(), filename);
+        System.out.printf("<td value=\"%s\" bgcolor=\"#BDBDBD\" fontcolor=\"#000000\" fontattribute=\"bold\" href=\"artifact/artifacts/%s\" width=\"200\" align=\"center\"/>\n", tagname, filename);
         if (cycle_compute) {
             System.out.printf("<td value=\"Cycles\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
             ListIterator<Long> vb = base.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();

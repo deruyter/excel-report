@@ -669,10 +669,12 @@ public class sqa_report {
 				if (output_file_name.lastIndexOf("/") > 0) {
 					tmp_str = output_file_name.substring(output_file_name.lastIndexOf("/") + 1, output_file_name.length());
 				}
-				if (ref_file.contains("branch")) {
-					summary.dump_hudson_summary("branch", tmp_str);
+				if (ref_file != null && ref_file.contains("branch")) {
+					summary.dump_hudson_summary(null, tmp_str);
+				} else if (ref_file != null) {
+					summary.dump_hudson_summary(null, tmp_str);
 				} else {
-					summary.dump_hudson_summary("ref", tmp_str);
+					summary.dump_hudson_summary(output_file_name.substring(output_file_name.lastIndexOf("/") + 1,output_file_name.lastIndexOf(".")), tmp_str);
 				}
 			} else {
 				summary.dump_summary(false, "");
