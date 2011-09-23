@@ -34,10 +34,16 @@ java -jar ../java-cup-11a.jar -parser Size_Parser parse_size.cup
 cd $local_position
 
 exit
-javac -classpath lib/java-cup-11a-runtime.jar:lib/poi-3.5-beta6-20090622.jar -d bin -sourcepath src src/*/*.java 
+javac -classpath lib/java-cup-11a-runtime.jar:lib/poi-3.6/poi-3.6-20091214.jar -d bin -sourcepath src src/*/*.java 
+if [ $? -ne 0 ]; then
+	echo "###"
+	echo "### ERROR when compiling sqa_report !! Leaving."
+	echo "###"
+	exit
+fi
 cd bin
 jar xvf ../lib/java-cup-11a-runtime.jar
-jar xvf ../lib/poi-3.5-beta6-20090622.jar
+jar xvf ../lib/poi-3.6/poi-3.6-20091214.jar
 cd ..
 jar cvfm sqa_report.jar MANIFEST -C bin/ . 
 

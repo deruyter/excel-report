@@ -311,7 +311,7 @@ public class Summary {
         while (vb.hasNext() && vc.hasNext()) {
             Long valb = vb.next();
             Long valc = vc.next();
-            if (valb <= -1 || valc <= -1) {
+            if (valb <= 0 || valc <= 0) {
                 continue;
             }
             nb_data++;
@@ -475,12 +475,13 @@ public class Summary {
             } else {
                 Integer nb_data = 0;
                 double sumb = 0, sumc = 0, min = 0, max = 0, tmp_val;
+                double geomean = 1.0;
                 ListIterator<Long> vb = base.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();
                 ListIterator<Long> vc = compare.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();
                 while (vb.hasNext() && vc.hasNext()) {
                     Long valb = vb.next();
                     Long valc = vc.next();
-                    if (valb <= -1 || valc <= -1) {
+                    if (valb <= 0 || valc <= 0) {
                         continue;
                     }
                     nb_data++;
@@ -493,18 +494,21 @@ public class Summary {
                     if (tmp_val < min) {
                         min = tmp_val;
                     }
+                    geomean *= (1.0-((valb.doubleValue() - valc.doubleValue()) / valb.doubleValue()));
                 }
-                double moy = (((sumb / nb_data.doubleValue()) - (sumc / nb_data.doubleValue())) / (sumc / nb_data.doubleValue()));
+                //                double moy = (((sumb / nb_data.doubleValue()) - (sumc / nb_data.doubleValue())) / (sumc / nb_data.doubleValue()));
+                double one_n = (1.0/nb_data.doubleValue());
+                geomean = 1.0 - Math.pow(geomean, one_n);
                 if (CruiseControl) {
                     System.out.printf(" Max Gain: %5.5s, Max Loss: %5.5s, Geomean: %5.5s",
                             String.format("%4.4f", min * 100.00),
                             String.format("%4.4f", max * 100.00),
-                            String.format("%4.4f", moy * 100.00));
+                            String.format("%4.4f", geomean * 100.00));
                 } else {
                     System.out.printf(" %5.5s / %5.5s / %5.5s  |",
                             String.format("%4.4f", min * 100.00),
                             String.format("%4.4f", max * 100.00),
-                            String.format("%4.4f", moy * 100.00));
+                            String.format("%4.4f", geomean * 100.00));
                 }
             }
         }
@@ -533,12 +537,13 @@ public class Summary {
             } else {
                 Integer nb_data = 0;
                 double sumb = 0, sumc = 0, min = 0, max = 0, tmp_val;
+                double geomean = 1.0;
                 ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).listIterator();
                 ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).listIterator();
                 while (vb.hasNext() && vc.hasNext()) {
                     Long valb = vb.next();
                     Long valc = vc.next();
-                    if (valb <= -1 || valc <= -1) {
+                    if (valb <= 0 || valc <= 0) {
                         continue;
                     }
                     nb_data++;
@@ -551,18 +556,21 @@ public class Summary {
                     if (tmp_val < min) {
                         min = tmp_val;
                     }
+                    geomean *= (1.0-((valb.doubleValue() - valc.doubleValue()) / valb.doubleValue()));
                 }
-                double moy = (((sumb / nb_data.doubleValue()) - (sumc / nb_data.doubleValue())) / (sumc / nb_data.doubleValue()));
+                //                double moy = (((sumb / nb_data.doubleValue()) - (sumc / nb_data.doubleValue())) / (sumc / nb_data.doubleValue()));
+                double one_n = (1.0/nb_data.doubleValue());
+                geomean = 1.0 - Math.pow(geomean, one_n);
                 if (CruiseControl) {
                     System.out.printf(" Max Gain: %5.5s, Max Loss: %5.5s, Geomean: %5.5s",
                             String.format("%4.4f", min * 100.00),
                             String.format("%4.4f", max * 100.00),
-                            String.format("%4.4f", moy * 100.00));
+                            String.format("%4.4f", geomean * 100.00));
                 } else {
                     System.out.printf(" %5.5s / %5.5s / %5.5s  |",
                             String.format("%4.4f", min * 100.00),
                             String.format("%4.4f", max * 100.00),
-                            String.format("%4.4f", moy * 100.00));
+                            String.format("%4.4f", geomean * 100.00));
                 }
             }
         }
@@ -592,12 +600,13 @@ public class Summary {
                 Integer nb_data = 0;
                 ;
                 double sumb = 0, sumc = 0, min = 0, max = 0, tmp_val;
+                double geomean = 1.0;
                 ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).listIterator();
                 ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).listIterator();
                 while (vb.hasNext() && vc.hasNext()) {
                     Long valb = vb.next();
                     Long valc = vc.next();
-                    if (valb <= -1 || valc <= -1) {
+                    if (valb <= 0 || valc <= 0) {
                         continue;
                     }
                     nb_data++;
@@ -610,18 +619,21 @@ public class Summary {
                     if (tmp_val < min) {
                         min = tmp_val;
                     }
+                    geomean *= (1.0-((valb.doubleValue() - valc.doubleValue()) / valb.doubleValue()));
                 }
-                double moy = (((sumb / nb_data.doubleValue()) - (sumc / nb_data.doubleValue())) / (sumc / nb_data.doubleValue()));
+                //                double moy = (((sumb / nb_data.doubleValue()) - (sumc / nb_data.doubleValue())) / (sumc / nb_data.doubleValue()));
+                double one_n = (1.0/nb_data.doubleValue());
+                geomean = 1.0 - Math.pow(geomean, one_n);
                 if (CruiseControl) {
                     System.out.printf(" Max Gain: %5.5s, Max Loss: %5.5s, Geomean: %5.5s",
                             String.format("%4.4f", min * 100.00),
                             String.format("%4.4f", max * 100.00),
-                            String.format("%4.4f", moy * 100.00));
+                            String.format("%4.4f", geomean * 100.00));
                 } else {
                     System.out.printf(" %5.5s / %5.5s / %5.5s  |",
                             String.format("%4.4f", min * 100.00),
                             String.format("%4.4f", max * 100.00),
-                            String.format("%4.4f", moy * 100.00));
+                            String.format("%4.4f", geomean * 100.00));
                 }
             }
         }
