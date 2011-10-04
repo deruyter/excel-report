@@ -34,6 +34,7 @@ java -jar ../java-cup-11a.jar -parser Size_Parser parse_size.cup
 cd $local_position
 
 exit
+mkdir bin
 javac -classpath lib/java-cup-11a-runtime.jar:lib/poi-3.6/poi-3.6-20091214.jar -d bin -sourcepath src src/*/*.java 
 if [ $? -ne 0 ]; then
 	echo "###"

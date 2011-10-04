@@ -303,9 +303,10 @@ public class Summary {
 //			</table>
 //		</tab>
 
-    private ArrayList<Double> compute_min_max_moy(ListIterator<Long> vb, ListIterator<Long> vc) {
+    private ArrayList<Double> compute_min_max_geomean(ListIterator<Long> vb, ListIterator<Long> vc) {
         Integer nb_data = 0;
         Double sumb = Double.valueOf(0), sumc = Double.valueOf(0), tmp_val;
+        Double geomean = 1.0;
         ArrayList<Double> list;
         Double min=Double.valueOf(0), max=Double.valueOf(0), moy=Double.valueOf(0);
         while (vb.hasNext() && vc.hasNext()) {
@@ -324,12 +325,15 @@ public class Summary {
             if (tmp_val < min) {
                 min = tmp_val;
             }
+            geomean *= (1.0-((valb.doubleValue() - valc.doubleValue()) / valb.doubleValue()));
         }
-        moy = (((sumb / nb_data.doubleValue()) - (sumc / nb_data.doubleValue())) / (sumc / nb_data.doubleValue()));
+        //        moy = (((sumb / nb_data.doubleValue()) - (sumc / nb_data.doubleValue())) / (sumc / nb_data.doubleValue()));
+        double one_n = (1.0/nb_data.doubleValue());
+        geomean = 1.0 - Math.pow(geomean, one_n);
         list = new ArrayList<Double>();
         list.add(min);
         list.add(max);
-        list.add(moy);
+        list.add(geomean);
         return list;
     }
 
@@ -374,31 +378,31 @@ public class Summary {
             System.out.printf("<td value=\"Cycles\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
             ListIterator<Long> vb = base.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();
             ListIterator<Long> vc = compare.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();
-            cycle_list = compute_min_max_moy(vb, vc);
+            cycle_list = compute_min_max_geomean(vb, vc);
         }
         if (size_func_compute) {
            System.out.printf("<td value=\"Function Size\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).listIterator();
-           sf_list = compute_min_max_moy(vb, vc);
+           sf_list = compute_min_max_geomean(vb, vc);
         }
         if (size_obj_compute) {
            System.out.printf("<td value=\"Object Size\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).listIterator();
-           so_list = compute_min_max_moy(vb, vc);
+           so_list = compute_min_max_geomean(vb, vc);
         }
         if (size_bin_compute) {
            System.out.printf("<td value=\"Binary Size\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).listIterator();
-           sb_list = compute_min_max_moy(vb, vc);
+           sb_list = compute_min_max_geomean(vb, vc);
         }
         if (size_appli_compute) {
            System.out.printf("<td value=\"Appli Size\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).listIterator();
-           sa_list = compute_min_max_moy(vb, vc);
+           sa_list = compute_min_max_geomean(vb, vc);
         }
         System.out.printf("</tr>\n<tr>\n");
         System.out.printf("<td value=\"Max gain\" bgcolor=\"#BDBDBD\" fontcolor=\"#000000\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
