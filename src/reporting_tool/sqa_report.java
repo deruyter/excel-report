@@ -21,6 +21,7 @@ public class sqa_report {
 	public static boolean Debug_on;
 	public static boolean Cruise_Control;
 	public static boolean Hudson;
+	public static boolean Aci;
 	public static TestSession current_test_session;
 	public static Discriminent current_parse_discriminent;
 	static boolean obj_size = true;
@@ -187,6 +188,11 @@ public class sqa_report {
 				warn_level = 0;
 				compare_options = false;
 				sizes_for_computation.add(Sections.TEXT);
+			} else if (args[i].contentEquals("-aci")) {
+				Aci = true;
+				warn_level = 0;
+				compare_options = false;
+				sizes_for_computation.add(Sections.TEXT);
 			} else if (args[i].contentEquals("-cruisec")) {
 				Cruise_Control = true;
 				warn_level = 0;
@@ -245,7 +251,7 @@ public class sqa_report {
 						session_name = line.substring(line.lastIndexOf("/") + 1, line.length());
 					}
 					line = line + "/" + key_name;
-					if (Cruise_Control || Hudson) {
+					if (Cruise_Control || Hudson || Aci) {
 						try {
 							FileReader myfile = new FileReader(line + "/BANNER");
 							rootdata.add_session(line, session_name);
@@ -303,7 +309,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException er) {
-				if (!Cruise_Control && !Hudson) {
+				if (!Cruise_Control && !Hudson && !Aci) {
 					System.out.println("Unable to find " + file_to_parse);
 				}
 			} catch (IOException er) {
@@ -351,7 +357,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if (!Cruise_Control && !Hudson) {
+				if (!Cruise_Control && !Hudson && !Aci) {
 					System.out.println("Unable to find" + file_to_parse);
 				}
 			} catch (IOException e) {
@@ -376,7 +382,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if (!Cruise_Control && !Hudson) {
+				if (!Cruise_Control && !Hudson && !Aci) {
 					System.out.println("Unable to find" + file_to_parse);
 				}
 			} catch (IOException e) {
@@ -400,7 +406,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if (!Cruise_Control && !Hudson) {
+				if (!Cruise_Control && !Hudson && !Aci) {
 					System.out.println("Unable to find" + file_to_parse);
 				}
 			} catch (IOException e) {
@@ -424,7 +430,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if (!Cruise_Control && !Hudson) {
+				if (!Cruise_Control && !Hudson && !Aci) {
 					System.out.println("Unable to find" + file_to_parse);
 				}
 			} catch (IOException e) {
@@ -551,10 +557,9 @@ public class sqa_report {
 		}
 		/*Start Processing phase*/
 		if (output_file_name == null) {
-			output_xls = new Xls_Output("default_output.xls");
-		} else {
-			output_xls = new Xls_Output(output_file_name);
-		}
+                    output_file_name = "default_output.xls";
+                }
+                output_xls = new Xls_Output(output_file_name);
 		output_xls.generate_header();
 		output_xls.create_summary(rootdata);
 		if (Debug_on) {
@@ -676,7 +681,19 @@ public class sqa_report {
 				} else {
 					summary.dump_hudson_summary(output_file_name.substring(output_file_name.lastIndexOf("/") + 1,output_file_name.lastIndexOf(".")), tmp_str);
 				}
-			} else {
+			} else if (Aci) {
+				String tmp_str = output_file_name;
+				if (output_file_name.lastIndexOf("/") > 0) {
+					tmp_str = output_file_name.substring(output_file_name.lastIndexOf("/") + 1, output_file_name.length());
+				}
+				if (ref_file != null && ref_file.contains("branch")) {
+					summary.dump_aci_summary(null, tmp_str);
+				} else if (ref_file != null) {
+					summary.dump_aci_summary(null, tmp_str);
+				} else {
+					summary.dump_aci_summary(output_file_name.substring(output_file_name.lastIndexOf("/") + 1,output_file_name.lastIndexOf(".")), tmp_str);
+				}
+                        } else {
 				summary.dump_summary(false, "");
 			}
 		}

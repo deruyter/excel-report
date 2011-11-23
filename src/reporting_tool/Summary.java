@@ -256,6 +256,20 @@ public class Summary {
     }
     private ArrayList<SummaryElement> elements;
 
+    public class Min_Max_Geomean_Result {
+        public final Double  min;
+        public final Double  max;
+        public final Double  geomean;
+        public final boolean mismatch;
+        
+        public Min_Max_Geomean_Result(Double min, Double max, Double geomean, boolean mismatch) {
+            this.min = min;
+            this.max = max;
+            this.geomean = geomean;
+            this.mismatch = mismatch;
+        }
+    }
+
     public Summary() {
         elements = new ArrayList<SummaryElement>();
     }
@@ -303,16 +317,20 @@ public class Summary {
 //			</table>
 //		</tab>
 
-    private ArrayList<Double> compute_min_max_geomean(ListIterator<Long> vb, ListIterator<Long> vc) {
+    private Min_Max_Geomean_Result compute_min_max_geomean(ListIterator<Long> vb, ListIterator<Long> vc) {
+        boolean mismatch = false;
         Integer nb_data = 0;
         Double sumb = Double.valueOf(0), sumc = Double.valueOf(0), tmp_val;
         Double geomean = 1.0;
-        ArrayList<Double> list;
         Double min=Double.valueOf(0), max=Double.valueOf(0), moy=Double.valueOf(0);
         while (vb.hasNext() && vc.hasNext()) {
             Long valb = vb.next();
             Long valc = vc.next();
             if (valb <= 0 || valc <= 0) {
+                // Results are considered uncomparable (mismatch) when one of the value is
+                // CommonData.NOT_EXECUTED or CommonData.HAS_FAILED or CommonData.NOT_RELEVANT
+                // or -1 (corresponding to 'No result')
+                mismatch |= (valb < 0 || valc < 0);
                 continue;
             }
             nb_data++;
@@ -330,16 +348,13 @@ public class Summary {
         //        moy = (((sumb / nb_data.doubleValue()) - (sumc / nb_data.doubleValue())) / (sumc / nb_data.doubleValue()));
         double one_n = (1.0/nb_data.doubleValue());
         geomean = 1.0 - Math.pow(geomean, one_n);
-        list = new ArrayList<Double>();
-        list.add(min);
-        list.add(max);
-        list.add(geomean);
-        return list;
+        return (new Min_Max_Geomean_Result(min, max, geomean, mismatch));
     }
 
     static final String green_code="#04B404";
     static final String red_code="#DF0101";
     static final String black_code="#000000";
+    static final String mismatch_str = "'Warning: some entries are missing'";
         
     private String get_color_code(double val) {
         if (val > 0.0) return red_code;
@@ -351,7 +366,7 @@ public class Summary {
     public void dump_hudson_summary(String Name, String filename) {
         SummaryElement base, compare;
         String tagname=Name;
-        ArrayList<Double> cycle_list = null, so_list = null, sf_list = null, sb_list = null, sa_list = null;
+        Min_Max_Geomean_Result cycle_sum = null, so_sum = null, sf_sum = null, sb_sum = null, sa_sum = null;
         ListIterator<SummaryElement> iter_elem = elements.listIterator(1);
         base = elements.get(0);
         compare = null;
@@ -378,54 +393,122 @@ public class Summary {
             System.out.printf("<td value=\"Cycles\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
             ListIterator<Long> vb = base.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();
             ListIterator<Long> vc = compare.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();
-            cycle_list = compute_min_max_geomean(vb, vc);
+            cycle_sum = compute_min_max_geomean(vb, vc);
         }
         if (size_func_compute) {
            System.out.printf("<td value=\"Function Size\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).listIterator();
-           sf_list = compute_min_max_geomean(vb, vc);
+           sf_sum = compute_min_max_geomean(vb, vc);
         }
         if (size_obj_compute) {
            System.out.printf("<td value=\"Object Size\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).listIterator();
-           so_list = compute_min_max_geomean(vb, vc);
+           so_sum = compute_min_max_geomean(vb, vc);
         }
         if (size_bin_compute) {
            System.out.printf("<td value=\"Binary Size\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).listIterator();
-           sb_list = compute_min_max_geomean(vb, vc);
+           sb_sum = compute_min_max_geomean(vb, vc);
         }
         if (size_appli_compute) {
            System.out.printf("<td value=\"Appli Size\" bgcolor=\"#BDBDBD\" fontcolor=\"#0000FF\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).listIterator();
-           sa_list = compute_min_max_geomean(vb, vc);
+           sa_sum = compute_min_max_geomean(vb, vc);
         }
         System.out.printf("</tr>\n<tr>\n");
         System.out.printf("<td value=\"Max gain\" bgcolor=\"#BDBDBD\" fontcolor=\"#000000\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
-        if (cycle_compute)      System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", cycle_list.get(0)*100,get_color_code(cycle_list.get(0)));
-        if (size_func_compute)  System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sf_list.get(0)*100,get_color_code(sf_list.get(0)));
-        if (size_obj_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", so_list.get(0)*100,get_color_code(so_list.get(0)));
-        if (size_bin_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sb_list.get(0)*100,get_color_code(sb_list.get(0)));
-        if (size_appli_compute) System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sa_list.get(0)*100,get_color_code(sa_list.get(0)));
+        if (cycle_compute)      System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", cycle_sum.min*100,get_color_code(cycle_sum.min));
+        if (size_func_compute)  System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sf_sum.min*100,get_color_code(sf_sum.min));
+        if (size_obj_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", so_sum.min*100,get_color_code(so_sum.min));
+        if (size_bin_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sb_sum.min*100,get_color_code(sb_sum.min));
+        if (size_appli_compute) System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sa_sum.min*100,get_color_code(sa_sum.min));
         System.out.printf("</tr>\n<tr>\n");
         System.out.printf("<td value=\"Max loss\" bgcolor=\"#BDBDBD\" fontcolor=\"#000000\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
-        if (cycle_compute)      System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", cycle_list.get(1)*100,get_color_code(cycle_list.get(1)));
-        if (size_func_compute)  System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sf_list.get(1)*100,get_color_code(sf_list.get(1)));
-        if (size_obj_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", so_list.get(1)*100,get_color_code(so_list.get(1)));
-        if (size_bin_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sb_list.get(1)*100,get_color_code(sb_list.get(1)));
-        if (size_appli_compute) System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sa_list.get(1)*100,get_color_code(sa_list.get(1)));
+        if (cycle_compute)      System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", cycle_sum.max*100,get_color_code(cycle_sum.max));
+        if (size_func_compute)  System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sf_sum.max*100,get_color_code(sf_sum.max));
+        if (size_obj_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", so_sum.max*100,get_color_code(so_sum.max));
+        if (size_bin_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sb_sum.max*100,get_color_code(sb_sum.max));
+        if (size_appli_compute) System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sa_sum.max*100,get_color_code(sa_sum.max));
         System.out.printf("</tr>\n<tr>\n");
         System.out.printf("<td value=\"Geomean\" bgcolor=\"#BDBDBD\" fontcolor=\"#000000\" fontattribute=\"bold\" width=\"100\" align=\"center\"/>\n");
-        if (cycle_compute)      System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", cycle_list.get(2)*100,get_color_code(cycle_list.get(2)));
-        if (size_func_compute)  System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sf_list.get(2)*100,get_color_code(sf_list.get(2)));
-        if (size_obj_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", so_list.get(2)*100,get_color_code(so_list.get(2)));
-        if (size_bin_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sb_list.get(2)*100,get_color_code(sb_list.get(2)));
-        if (size_appli_compute) System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sa_list.get(2)*100,get_color_code(sa_list.get(2)));
+        if (cycle_compute)      System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", cycle_sum.geomean*100,get_color_code(cycle_sum.geomean));
+        if (size_func_compute)  System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sf_sum.geomean*100,get_color_code(sf_sum.geomean));
+        if (size_obj_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", so_sum.geomean*100,get_color_code(so_sum.geomean));
+        if (size_bin_compute)   System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sb_sum.geomean*100,get_color_code(sb_sum.geomean));
+        if (size_appli_compute) System.out.printf("<td value=\"%4.4f\" bgcolor=\"#FFFFFF\" fontcolor=\"%s\"  width=\"100\" align=\"center\"/>\n", sa_sum.geomean*100,get_color_code(sa_sum.geomean));
         System.out.printf("</tr>\n</table>\n");
+    }
+
+    // Output a summary of the validation in yaml format
+    public void dump_aci_summary(String Name, String filename) {
+        SummaryElement base, compare;
+        String tagname=Name;
+        Min_Max_Geomean_Result res = null;
+        ListIterator<SummaryElement> iter_elem = elements.listIterator(1);
+        base = elements.get(0);
+        compare = null;
+        while (iter_elem.hasNext()) {
+        	compare = iter_elem.next();
+            if (base == compare) {
+            	compare=null;
+                continue;
+            } else {
+                break;
+            }
+        }
+        if (compare == null) return;
+        if (Name == null || Name.isEmpty()) tagname=base.get_name();
+        Boolean cycle_compute = !compare.get_cycles(CommonData.Dump_Type.Run_Valid).isEmpty();
+        Boolean size_func_compute = !compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).isEmpty();
+        Boolean size_obj_compute = !compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).isEmpty();
+        Boolean size_bin_compute = !compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).isEmpty();
+        Boolean size_appli_compute = false;//!compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).isEmpty();
+        System.out.printf("{\ntagname: %s,\nfilename: %s,\n", tagname, filename);
+        if (cycle_compute) {
+            ListIterator<Long> vb = base.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();
+            ListIterator<Long> vc = compare.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();
+            res = compute_min_max_geomean(vb, vc);
+            // Cycles; Max gain ; Max Loss ; Geomean
+            System.out.printf("Cycles: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
+                              res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
+        }
+        if (size_func_compute) {
+           ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).listIterator();
+           ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).listIterator();
+           res = compute_min_max_geomean(vb, vc);
+            // Function Size; Max gain ; Max Loss ; Geomean
+            System.out.printf("Function Size: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
+                              res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
+        }
+        if (size_obj_compute) {
+           ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).listIterator();
+           ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).listIterator();
+           res = compute_min_max_geomean(vb, vc);
+           // Object Size; Max gain ; Max Loss ; Geomean
+           System.out.printf("Object Size: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
+                              res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
+        }
+        if (size_bin_compute) {
+           ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).listIterator();
+           ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).listIterator();
+           res = compute_min_max_geomean(vb, vc);
+           // Binary Size; Max gain ; Max Loss ; Geomean
+           System.out.printf("Binary Size: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
+                              res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
+        }
+        if (size_appli_compute) {
+           ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).listIterator();
+           ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).listIterator();
+           res = compute_min_max_geomean(vb, vc);
+           // Appli Size; Max gain ; Max Loss ; Geomean
+           System.out.printf("Appli Size: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
+                              res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
+        }
+        System.out.printf("},\n");
     }
 
     public void dump_summary(Boolean CruiseControl, String Name) {

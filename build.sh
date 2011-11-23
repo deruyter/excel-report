@@ -43,10 +43,13 @@ if [ $? -ne 0 ]; then
 	exit
 fi
 cd bin
-jar xvf ../lib/java-cup-11a-runtime.jar
-jar xvf ../lib/poi-3.6/poi-3.6-20091214.jar
+echo "## Extracting java-cup-11a-runtime.jar ..."
+jar xf ../lib/java-cup-11a-runtime.jar
+echo "## Extracting poi-3.6/poi-3.6-20091214.jar ..."
+jar xf ../lib/poi-3.6/poi-3.6-20091214.jar
 cd ..
-jar cvfm sqa_report.jar MANIFEST -C bin/ . 
+echo "## Building sqa_report.jar ..."
+jar cfm sqa_report.jar MANIFEST -C bin/ . 
 
 
 
