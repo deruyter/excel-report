@@ -75,9 +75,10 @@ string         = [a-zA-Z/-@\-0-9_\.]*
 "SX Toolset"{ws}":"    	{yybegin(LNAME);return symbol(sym.FL_TOOLSET);}
 "stxp70cc"{ws}":"      	{yybegin(CPVERSION);return symbol(sym.FL_VERSION);}
 "st200cc"{ws}":"      	{yybegin(CPVERSION);return symbol(sym.FL_VERSION);}
+"armcc"{ws}":"      	{yybegin(CPVERSION);return symbol(sym.FL_VERSION);}
 "sxcc"{ws}":"      		{yybegin(CPVERSION);return symbol(sym.FL_VERSION);}
 "simu version"{ws}":"  	{yybegin(LNAME);return symbol(sym.FL_SIMU);}
-"runner flags"{ws}":"  	{return symbol(sym.FL_SIM_FLAGS);}
+"runner flags"{ws}":"  	{yybegin(COMPFLAGS);return symbol(sym.FL_SIM_FLAGS);}
 "extra flags"{ws}":"  	{yybegin(IGNORE_LINE);}
 "flags"{ws}":"         	{yybegin(COMPFLAGS);return symbol(sym.FL_COMP_FLAGS);}
 "double mode"{ws}":"   	{return symbol(sym.FL_MODE);}
