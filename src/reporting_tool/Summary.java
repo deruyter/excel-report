@@ -2,6 +2,7 @@ package reporting_tool;
 
 import java.util.ArrayList;
 import java.util.ListIterator;
+import java.io.*;
 
 public class Summary {
 
@@ -444,7 +445,7 @@ public class Summary {
     }
 
     // Output a summary of the validation in yaml format
-    public void dump_aci_summary(String Name, String filename) {
+    public void dump_aci_summary(String Name, String xls_filename, String output_filename) {
         SummaryElement base, compare;
         String tagname=Name;
         Min_Max_Geomean_Result res = null;
@@ -462,53 +463,69 @@ public class Summary {
         }
         if (compare == null) return;
         if (Name == null || Name.isEmpty()) tagname=base.get_name();
+        
+        PrintWriter outfile;
+        if (output_filename != null) {
+            try {
+                outfile = new PrintWriter(new FileWriter(output_filename));
+            } catch (java.io.IOException exp) {
+                // Failed to open file -> Use stdout
+                outfile = new PrintWriter(System.out);
+            }
+        }
+        else {
+            outfile = new PrintWriter(System.out);
+        }
+
         Boolean cycle_compute = !compare.get_cycles(CommonData.Dump_Type.Run_Valid).isEmpty();
         Boolean size_func_compute = !compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).isEmpty();
         Boolean size_obj_compute = !compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).isEmpty();
         Boolean size_bin_compute = !compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).isEmpty();
         Boolean size_appli_compute = false;//!compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).isEmpty();
-        System.out.printf("{\ntagname: %s,\nfilename: %s,\n", tagname, filename);
+        outfile.printf("{\ntagname: %s,\nfilename: %s,\n", tagname, xls_filename);
         if (cycle_compute) {
             ListIterator<Long> vb = base.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();
             ListIterator<Long> vc = compare.get_cycles(CommonData.Dump_Type.Run_Valid).listIterator();
             res = compute_min_max_geomean(vb, vc);
             // Cycles; Max gain ; Max Loss ; Geomean
-            System.out.printf("Cycles: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
-                              res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
+            outfile.printf("Cycles: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
+                           res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
         }
         if (size_func_compute) {
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_FUNC).listIterator();
            res = compute_min_max_geomean(vb, vc);
             // Function Size; Max gain ; Max Loss ; Geomean
-            System.out.printf("Function Size: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
-                              res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
+            outfile.printf("Function Size: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
+                           res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
         }
         if (size_obj_compute) {
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_OBJ).listIterator();
            res = compute_min_max_geomean(vb, vc);
            // Object Size; Max gain ; Max Loss ; Geomean
-           System.out.printf("Object Size: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
-                              res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
+           outfile.printf("Object Size: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
+                          res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
         }
         if (size_bin_compute) {
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_BIN).listIterator();
            res = compute_min_max_geomean(vb, vc);
            // Binary Size; Max gain ; Max Loss ; Geomean
-           System.out.printf("Binary Size: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
-                              res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
+           outfile.printf("Binary Size: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
+                          res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
         }
         if (size_appli_compute) {
            ListIterator<Long> vb = base.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).listIterator();
            ListIterator<Long> vc = compare.get_size(CommonData.Dump_Type.Run_Valid, Discriminent.SIZE_APPLI).listIterator();
            res = compute_min_max_geomean(vb, vc);
            // Appli Size; Max gain ; Max Loss ; Geomean
-           System.out.printf("Appli Size: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
-                              res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
+           outfile.printf("Appli Size: {min: %4.4f, max: %4.4f, geomean: %4.4f, comment: %s },\n",
+                          res.min*100, res.max*100, res.geomean*100, res.mismatch?mismatch_str:"");
         }
-        System.out.printf("},\n");
+        outfile.printf("},\n");
+
+        outfile.close();
     }
 
     public void dump_summary(Boolean CruiseControl, String Name) {

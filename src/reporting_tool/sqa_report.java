@@ -22,6 +22,7 @@ public class sqa_report {
 	public static boolean Cruise_Control;
 	public static boolean Hudson;
 	public static boolean Aci;
+        public static String  Aci_output_file_name = null;
 	public static TestSession current_test_session;
 	public static Discriminent current_parse_discriminent;
 	static boolean obj_size = true;
@@ -193,6 +194,11 @@ public class sqa_report {
 				warn_level = 0;
 				compare_options = false;
 				sizes_for_computation.add(Sections.TEXT);
+                        } else if (args[i].contentEquals("-aci-output")) {
+                                if (i + 1 < args.length) {
+                                        i++;
+                                        Aci_output_file_name = args[i];
+                                }
 			} else if (args[i].contentEquals("-cruisec")) {
 				Cruise_Control = true;
 				warn_level = 0;
@@ -684,14 +690,14 @@ public class sqa_report {
 			} else if (Aci) {
 				String tmp_str = output_file_name;
 				if (output_file_name.lastIndexOf("/") > 0) {
-					tmp_str = output_file_name.substring(output_file_name.lastIndexOf("/") + 1, output_file_name.length());
+                                    tmp_str = output_file_name.substring(output_file_name.lastIndexOf("/") + 1, output_file_name.length());
 				}
 				if (ref_file != null && ref_file.contains("branch")) {
-					summary.dump_aci_summary(null, tmp_str);
+					summary.dump_aci_summary(null, tmp_str, Aci_output_file_name);
 				} else if (ref_file != null) {
-					summary.dump_aci_summary(null, tmp_str);
+					summary.dump_aci_summary(null, tmp_str, Aci_output_file_name);
 				} else {
-					summary.dump_aci_summary(output_file_name.substring(output_file_name.lastIndexOf("/") + 1,output_file_name.lastIndexOf(".")), tmp_str);
+					summary.dump_aci_summary(output_file_name.substring(output_file_name.lastIndexOf("/") + 1,output_file_name.lastIndexOf(".")), tmp_str, Aci_output_file_name);
 				}
                         } else {
 				summary.dump_summary(false, "");
