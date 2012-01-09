@@ -64,6 +64,8 @@ public class sqa_report {
 		System.out.println("\t\ttext_rodata : to combine text+rodata");
 		System.out.println("\t-ref <fichier> : list of references directory to parse:");
 		System.out.println("\t-key <name> : directory name to consider under referenced directory from ref option");
+		System.out.println("\t-aci : generate a summary of performance in yaml format. By default, stdout is used");
+		System.out.println("\t-aci-output <name> : specify a filename to output the aci summary");
 		System.exit(0);
 	}
 
