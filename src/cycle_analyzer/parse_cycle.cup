@@ -26,7 +26,7 @@ parser code {:
 :}; 
 
 
-terminal FL_COMA;
+terminal FL_COMA, FL_RESULT_NAME_BEGIN, FL_RESULT_NAME_END;
 terminal String FL_NAME;
 terminal Long FL_NUMBER;
 non terminal cycle_file, lines, one_line;
@@ -42,7 +42,11 @@ lines::=
 ;
 
 one_line::=
-	 FL_NAME:name FL_COMA FL_NUMBER:value
+     FL_RESULT_NAME_BEGIN FL_NAME:bench_name FL_NAME:phase_name FL_RESULT_NAME_END
+	{: sqa_report.current_test_session.set_current_test_parsing(bench_name,phase_name); :}
+     | FL_RESULT_NAME_BEGIN FL_NAME:bench_name FL_RESULT_NAME_END
+	{: sqa_report.current_test_session.set_current_test_parsing(bench_name,null); :}
+	 | FL_NAME:name FL_COMA FL_NUMBER:value
 	{: sqa_report.current_test_session.add_cycle_count(name,value); :}
 ;
 

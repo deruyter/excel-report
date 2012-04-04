@@ -35,7 +35,7 @@ cd $local_position
 
 #exit
 mkdir bin
-javac -classpath lib/java-cup-11a-runtime.jar:lib/poi-3.6/poi-3.6-20091214.jar -d bin -sourcepath src src/*/*.java 
+javac -classpath lib/java-cup-11a-runtime.jar:lib/poi-3.8-beta5/poi-3.8-beta5-20111217.jar -d bin -sourcepath src src/*/*.java 
 if [ $? -ne 0 ]; then
 	echo "###"
 	echo "### ERROR when compiling sqa_report !! Leaving."
@@ -45,8 +45,8 @@ fi
 cd bin
 echo "## Extracting java-cup-11a-runtime.jar ..."
 jar xf ../lib/java-cup-11a-runtime.jar
-echo "## Extracting poi-3.6/poi-3.6-20091214.jar ..."
-jar xf ../lib/poi-3.6/poi-3.6-20091214.jar
+echo "## Extracting poi-3.x/poi-3.x...jar ..."
+jar xf ../lib/poi-3.8-beta5/poi-3.8-beta5-20111217.jar
 cd ..
 echo "## Building sqa_report.jar ..."
 jar cfm sqa_report.jar MANIFEST -C bin/ . 

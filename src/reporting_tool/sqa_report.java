@@ -11,18 +11,16 @@ import size_analyzer.*;
 import cycle_analyzer.*;
 import info_analyzer.*;
 import fail_analyzer.*;
-import java.util.Collection;
-import java.util.Iterator;
 
 public class sqa_report {
 
-	public static int warn_level = 1;
+	public static int warn_level = 0;
 	public static boolean core_only, ext_only;
 	public static boolean Debug_on;
 	public static boolean Cruise_Control;
 	public static boolean Hudson;
 	public static boolean Aci;
-        public static String  Aci_output_file_name = null;
+    public static String  Aci_output_file_name = null;
 	public static TestSession current_test_session;
 	public static Discriminent current_parse_discriminent;
 	static boolean obj_size = true;
@@ -31,7 +29,6 @@ public class sqa_report {
 	static boolean cycle = true;
 	static boolean compare_options = true;
 	static boolean generate_output_info = true;
-	static boolean new_mode = true;
 	private static int nb_tst = 0;
 	private static String output_file_name = null;
 	static String ref_file = null, key_name = null;
@@ -166,8 +163,8 @@ public class sqa_report {
 					i++;
 					key_name = args[i];
 				}
-			} else if (args[i].contentEquals("-Woff")) {
-				warn_level = 0;
+			} else if (args[i].contentEquals("-Won")) {
+				warn_level = 1;
 			} else if (args[i].contentEquals("-noobj")) {
 				obj_size = false;
 			} else if (args[i].contentEquals("-nobin")) {
@@ -184,16 +181,12 @@ public class sqa_report {
 				ext_only = true;
 			} else if (args[i].contentEquals("-dbg")) {
 				Debug_on = true;
-			} else if (args[i].contentEquals("-old_style")) {
-				new_mode = false;
 			} else if (args[i].contentEquals("-hudson")) {
 				Hudson = true;
-				warn_level = 0;
 				compare_options = false;
 				sizes_for_computation.add(Sections.TEXT);
 			} else if (args[i].contentEquals("-aci")) {
 				Aci = true;
-				warn_level = 0;
 				compare_options = false;
 				sizes_for_computation.add(Sections.TEXT);
                         } else if (args[i].contentEquals("-aci-output")) {
@@ -203,13 +196,11 @@ public class sqa_report {
                                 }
 			} else if (args[i].contentEquals("-cruisec")) {
 				Cruise_Control = true;
-				warn_level = 0;
 				compare_options = false;
 				sizes_for_computation.add(Sections.TEXT);
 			} else if (args[i].contentEquals("-monitor")) {
 				//Monitoring=true;
 				generate_output_info = false;
-				warn_level = 0;
 				compare_options = false;
 				sizes_for_computation.add(Sections.RODATA_PLUS_TEXT);
 				ref_file = "References.txt";
@@ -219,12 +210,10 @@ public class sqa_report {
 				System.out.println("Warning option -monitor not yet implemented");
 				System.exit(0);
 			} else if (args[i].contentEquals("-default")) {
-				warn_level = 0;
 				compare_options = false;
 				sizes_for_computation.add(Sections.TEXT);
 				ref_file = "References.txt";
 			} else if (args[i].contentEquals("-nightly")) {
-				warn_level = 0;
 				compare_options = false;
 				sizes_for_computation.add(Sections.RODATA_PLUS_TEXT);
 				section_for_summary = Sections.RODATA_PLUS_TEXT;
@@ -597,13 +586,7 @@ public class sqa_report {
 		if (obj_size) {
 			rootdata.compute_data(Discriminent.SIZE_OBJ);
 			for (i = 0; i < sizes_for_computation.size(); i++) {
-				if (!new_mode) {
-					output_xls.create_page(rootdata, Discriminent.SIZE_OBJ, sizes_for_computation.get(i));
-				}
-				if (new_mode) {
-					output_xls.create_new_page(rootdata, Discriminent.SIZE_OBJ, sizes_for_computation.get(i));
-				}
-
+				output_xls.create_new_page(rootdata, Discriminent.SIZE_OBJ, sizes_for_computation.get(i));
 			}
 		}
 		if (Debug_on) {
@@ -613,13 +596,8 @@ public class sqa_report {
 		if (bin_size) {
 			rootdata.compute_data(Discriminent.SIZE_BIN);
 			for (i = 0; i < sizes_for_computation.size(); i++) {
-				if (!new_mode) {
-					output_xls.create_page(rootdata, Discriminent.SIZE_BIN, sizes_for_computation.get(i));
+				output_xls.create_new_page(rootdata, Discriminent.SIZE_BIN, sizes_for_computation.get(i));
 				}
-				if (new_mode) {
-					output_xls.create_new_page(rootdata, Discriminent.SIZE_BIN, sizes_for_computation.get(i));
-				}
-			}
 		}
 
 		if (Debug_on) {
@@ -628,21 +606,11 @@ public class sqa_report {
 		if (func_size) {
 			rootdata.compute_data(Discriminent.SIZE_FUNC);
 			for (i = 0; i < sizes_for_computation.size(); i++) {
-				if (!new_mode) {
-					output_xls.create_page(rootdata, Discriminent.SIZE_FUNC, sizes_for_computation.get(i));
-				}
-				if (new_mode) {
-					output_xls.create_new_page(rootdata, Discriminent.SIZE_FUNC, sizes_for_computation.get(i));
-				}
+				output_xls.create_new_page(rootdata, Discriminent.SIZE_FUNC, sizes_for_computation.get(i));
 			}
 			rootdata.compute_data(Discriminent.SIZE_APPLI);
 			for (i = 0; i < sizes_for_computation.size(); i++) {
-				if (!new_mode) {
-					output_xls.create_page(rootdata, Discriminent.SIZE_APPLI, sizes_for_computation.get(i));
-				}
-				if (new_mode) {
-					output_xls.create_new_page(rootdata, Discriminent.SIZE_APPLI, sizes_for_computation.get(i));
-				}
+				output_xls.create_new_page(rootdata, Discriminent.SIZE_APPLI, sizes_for_computation.get(i));
 			}
 		}
 		if (Debug_on) {
@@ -658,12 +626,7 @@ public class sqa_report {
 			if (Debug_on) {
 				System.out.println("generate cycle #2");
 			}
-			if (!new_mode) {
-				output_xls.create_page(rootdata, Discriminent.SPEED, Sections.LAST_SECTION);
-			}
-			if (new_mode) {
-				output_xls.create_new_page(rootdata, Discriminent.SPEED, Sections.LAST_SECTION);
-			}
+			output_xls.create_new_page(rootdata, Discriminent.SPEED, Sections.LAST_SECTION);
 		}
 
 		if (Debug_on) {

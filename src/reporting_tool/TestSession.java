@@ -34,6 +34,8 @@ public class TestSession {
 	private String empty="(none)";
 	private String target_name;
 	private String size_target;
+	private String Cur_bench_name;
+	private String Cur_phase_name;
 	private ArrayList<Test>  obj_size_tests; 
 	private ArrayList<Test>  bin_size_tests; 
 	private ArrayList<Test>  func_size_tests; 
@@ -127,7 +129,8 @@ public class TestSession {
 		extension_built=false;
 		simulator_version=null;
 		compiler_version=null;
-
+		Cur_bench_name=null;
+		Cur_phase_name=null;
 	}
 
 	public ArrayList<Test> get_tests(Discriminent disc) {
@@ -155,6 +158,14 @@ public class TestSession {
 
 	public void add_test_size(String test_name, String target, Sections sec, Integer size, Discriminent disc) {
 		Target mytarget;
+		if (Cur_phase_name != null && Cur_phase_name.contentEquals("PFO_Phase_1_Instrumentation")){
+			if (sqa_report.warn_level > 0) System.err.println("INFO: Size count for PFO_Phase_1_Instrumentation ignored\n"); 
+			return;
+		}
+		if (Cur_phase_name != null && Cur_phase_name.contentEquals("FDO_Phase_1_Instrumentation")){
+			if (sqa_report.warn_level > 0) System.err.println("INFO: Size count for FDO_Phase_1_Instrumentation ignored\n"); 
+			return;
+		}
 		if(target.contains( "Perfs_BILBO.o")) return;
 		if(target.contains( "Verbose.o")) return;
 		if(target.contains( "Check.o")) return;
@@ -303,6 +314,14 @@ public class TestSession {
 	}
 
 	public void add_cycle_count(String name, Long value) {
+		if (Cur_phase_name != null && Cur_phase_name.contentEquals("PFO_Phase_1_Instrumentation")){
+			if (sqa_report.warn_level > 0) System.err.println("INFO: Cycle count for PFO_Phase_1_Instrumentation ignored\n"); 
+			return;
+		}
+		if (Cur_phase_name != null && Cur_phase_name.contentEquals("FDO_Phase_1_Instrumentation")){
+			if (sqa_report.warn_level > 0) System.err.println("INFO: Cycle count for FDO_Phase_1_Instrumentation ignored\n"); 
+			return;
+		}
 		for (int i=0; i<speed_tests.size();i++) {
 			if (speed_tests.get(i).name.contentEquals(name.toLowerCase())) {
 				if (sqa_report.warn_level > 0) System.err.println("WARNING: Test suit " + name + " already given, skipped\n"); 
@@ -319,6 +338,11 @@ public class TestSession {
 		mytarget.cycles = value;
 	}
 
+	public void set_current_test_parsing(String bench_name, String phase_name) {
+		Cur_bench_name=bench_name;
+		Cur_phase_name=phase_name;
+	}
+	
 	private String compute_test_and_target_name(String name) {
 		if (name.contains("eembc_v")) {
 			target_name = name.substring(name.lastIndexOf("--")+2);

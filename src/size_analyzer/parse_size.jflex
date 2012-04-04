@@ -189,5 +189,9 @@ string  = [a-zA-Z/0-9_\.\-@\+]*
 {number}  					{return symbol(sym.FL_NUMBER,new Integer(yytext()));}
 {stbegin}{string} 			{return symbol(sym.FL_NAME,yytext());}
 
+"----- Results in"          {return symbol(sym.FL_RESULT_NAME_BEGIN);}
+"-----"                     {return symbol(sym.FL_RESULT_NAME_END);}
+
+
 .    {error("Illegal character: "+ yytext());}
 
