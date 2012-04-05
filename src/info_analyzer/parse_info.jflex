@@ -88,6 +88,8 @@ string         = [a-zA-Z/-@\-0-9_\.]*
 "profiling  activated"{ws}":" { return symbol(sym.FL_PROF);}
 "Pass 1 flags"{ws}":" { yybegin(COMPFLAGS);return symbol(sym.FL_COMP_FLAGS);}
 "Pass 2 flags"{ws}":" { yybegin(COMPFLAGS);return symbol(sym.FL_COMP_FLAGS);}
+"PHASE_1=" { yybegin(COMPFLAGS);return symbol(sym.FL_COMP_FLAGS);}
+"PHASE_2=" { yybegin(COMPFLAGS);return symbol(sym.FL_COMP_FLAGS);}
 
 "|"|":"|"| - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -" { /* ignore */ }
 
