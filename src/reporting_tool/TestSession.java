@@ -333,6 +333,7 @@ public class TestSession {
 			}
 		}
 		String local_test_name = compute_test_and_target_name(name.toLowerCase());
+		if (local_test_name.contains("eembc_") && target_name.contains("empty")) return; 
 		Test mytest = find_test(local_test_name,Discriminent.SPEED);
 		if (mytest == null) mytest =  new Test(local_test_name);
 		speed_tests.add(mytest);
