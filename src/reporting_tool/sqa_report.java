@@ -240,6 +240,11 @@ public class sqa_report {
 				String line = null; //not declared within while loop
 				while ((line = input.readLine()) != null) {
 					String session_name = line;
+					//Remove trailing spaces
+					while ((line.endsWith(" ") || line.endsWith("\t")) && line.length() > 0) {
+						line = line.substring(0, line.length() - 1);
+					}
+					if (line.length() == 0) continue;
 					if (line.endsWith("/")) {
 						System.out.println("Line contains / at end :" + line);
 						line = line.substring(0, line.length() - 1);
