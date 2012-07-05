@@ -166,10 +166,13 @@ public class Xls_Output {
 		summary_sheet.setColumnWidth(col++, 70 * 50);
 		summary_sheet.setColumnWidth(col++, 90 * 50);
 		summary_sheet.setColumnWidth(col++, 220 * 50);
+		summary_sheet.setColumnWidth(col++, 90 * 50);
+		summary_sheet.setColumnWidth(col++, 70 * 50);
 		summary_sheet.setColumnWidth(col++, 70 * 50);
 		summary_sheet.setColumnWidth(col++, 220 * 50);
 		summary_sheet.setColumnWidth(col++, 150 * 50);
 		summary_sheet.setColumnWidth(col++, 150 * 50);
+		summary_sheet.setColumnWidth(col++, 400 * 50);
 
 		// First line
 		my_cur_row = summary_sheet.createRow(FIRST_ROW);
@@ -177,37 +180,44 @@ public class Xls_Output {
 
 
 		// We go directly to the row 5
+		col = 1;
 		my_cur_row = summary_sheet.createRow(5);
 		string_cell(my_cur_row, FIRST_COLUMN, BOLDCENTER_STYL_ID, "ID");
-		string_cell(my_cur_row, FIRST_COLUMN + 1, BOLDCENTER_STYL_ID, "Session");
-		string_cell(my_cur_row, FIRST_COLUMN + 2, BOLDCENTER_STYL_ID, "Launch date");
-		string_cell(my_cur_row, FIRST_COLUMN + 3, BOLDCENTER_STYL_ID, "Compiler Version");
-		string_cell(my_cur_row, FIRST_COLUMN + 4, BOLDCENTER_STYL_ID, "Compiler Date");
-		string_cell(my_cur_row, FIRST_COLUMN + 5, BOLDCENTER_STYL_ID, "Compiler Flags");
-		string_cell(my_cur_row, FIRST_COLUMN + 6, BOLDCENTER_STYL_ID, "Simulator Version");
-		string_cell(my_cur_row, FIRST_COLUMN + 7, BOLDCENTER_STYL_ID, "Simulator Flags");
+		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Session");
+		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Launch date");
+		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Compiler Version");
+		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Compiler Date");
+		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Build N°");
+		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Executor");
+		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Compiler Flags");
+		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Simulator Version");
+		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Simulator Flags");
+		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Toolset Path");
 
-
-		int i = 1;
+		int i;
 		for (i = 0; i < rootdata.get_nb_sessions(); i++) {
 			TestSession my_session = rootdata.get_session(i);
 			my_cur_row = summary_sheet.createRow(6 + i);
+			col=1;
 			number_cell(my_cur_row, FIRST_COLUMN, i + 1);
-			string_cell(my_cur_row, FIRST_COLUMN + 1, my_session.name);
-			string_cell(my_cur_row, FIRST_COLUMN + 2, my_session.date.print_date() + " " + my_session.date.print_time());
-			string_cell(my_cur_row, FIRST_COLUMN + 3, my_session.get_cc_ver());
-			string_cell(my_cur_row, FIRST_COLUMN + 4, my_session.get_cc_date());
-			string_cell(my_cur_row, FIRST_COLUMN + 5, "");
+			string_cell(my_cur_row, FIRST_COLUMN + col++, my_session.name);
+			string_cell(my_cur_row, FIRST_COLUMN + col++, my_session.date.print_date() + " " + my_session.date.print_time());
+			string_cell(my_cur_row, FIRST_COLUMN + col++, my_session.get_cc_ver());
+			string_cell(my_cur_row, FIRST_COLUMN + col++, my_session.get_cc_date());
+			string_cell(my_cur_row, FIRST_COLUMN + col++, my_session.build_number);
+			string_cell(my_cur_row, FIRST_COLUMN + col++, my_session.executor_name);
+			string_cell(my_cur_row, FIRST_COLUMN + col++, "");
 			ListIterator<String> iter_elem = my_session.compiler_flags.listIterator();
 			while (iter_elem.hasNext()) {
 				string_out(iter_elem.next() + " ");
 			}
-			string_cell(my_cur_row, FIRST_COLUMN + 6, my_session.get_sim_ver());
-			string_cell(my_cur_row, FIRST_COLUMN + 7, "");
+			string_cell(my_cur_row, FIRST_COLUMN + col++, my_session.get_sim_ver());
+			string_cell(my_cur_row, FIRST_COLUMN + col++, "");
 			iter_elem = my_session.simulator_flags.listIterator();
 			while (iter_elem.hasNext()) {
 				string_out(iter_elem.next() + " ");
 			}
+			string_cell(my_cur_row, FIRST_COLUMN + col++, my_session.toolst_path);
 		}
 	}
 

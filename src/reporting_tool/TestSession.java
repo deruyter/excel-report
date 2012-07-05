@@ -48,7 +48,11 @@ public class TestSession {
 	public String compiler_name;
 	public String compiler_version;
 	public String compiler_date;
+	public String toolst_path;
 	public String simulator_version;
+	public String executor_name;
+	public String logdir;
+	public String build_number;
 	public ArrayList<String>  compiler_flags;
 	public ArrayList<String>  simulator_flags;
 	public ArrayList<String>  failures;
@@ -606,13 +610,25 @@ public class TestSession {
 	}
 
 	public void set_compiler_name(String name) {
-		if (!sqa_report.Cruise_Control) compiler_name=name;
+		if (!sqa_report.Cruise_Control) {
+			compiler_name=name;
+			toolst_path=name;
+		}
 		else {
 			// /home/compwork/cruisecontrol/open64-nightly-res/compilers/open64-linux-dt25-dev-gcm-merge-4-2-23140/stxp70v4/toolset
+			toolst_path=name;
 			compiler_name = name.substring(name.indexOf("open64-linux")+13);
 			compiler_name = compiler_name.substring(0,compiler_name.indexOf("/"));
 		}
 		
 	}
-
+	
+	public void set_logdir_info(String node, String name) {
+		// (gnx5281) /tmp/open64-dt25-dev-aci-config-short_52/38936/stxp70v4/O3MultCASDual/aec16b
+		executor_name=node;
+		logdir=name;
+		build_number = name.substring(name.indexOf("open64-linux")+13);
+		build_number = build_number.substring(0,build_number.indexOf("/"));
+		build_number = build_number.substring(build_number.indexOf("_")+1);
+	}
 }
