@@ -187,7 +187,7 @@ public class Xls_Output {
 		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Launch date");
 		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Compiler Version");
 		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Compiler Date");
-		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Build N°");
+		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Build No");
 		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Executor");
 		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Compiler Flags");
 		string_cell(my_cur_row, FIRST_COLUMN + col++, BOLDCENTER_STYL_ID, "Simulator Version");
