@@ -17,7 +17,6 @@ public class sqa_report {
 	public static int warn_level = 0;
 	public static boolean core_only, ext_only;
 	public static boolean Debug_on;
-	public static boolean Cruise_Control;
 	public static boolean Hudson;
 	public static boolean Aci;
     public static String  Aci_output_file_name = null;
@@ -194,10 +193,6 @@ public class sqa_report {
                                         i++;
                                         Aci_output_file_name = args[i];
                                 }
-			} else if (args[i].contentEquals("-cruisec")) {
-				Cruise_Control = true;
-				compare_options = false;
-				sizes_for_computation.add(Sections.TEXT);
 			} else if (args[i].contentEquals("-monitor")) {
 				//Monitoring=true;
 				generate_output_info = false;
@@ -253,7 +248,7 @@ public class sqa_report {
 						session_name = line.substring(line.lastIndexOf("/") + 1, line.length());
 					}
 					line = line + "/" + key_name;
-					if (Cruise_Control || Hudson || Aci) {
+					if (Hudson || Aci) {
 						try {
 							FileReader myfile = new FileReader(line + "/BANNER");
 							rootdata.add_session(line, session_name);
@@ -311,7 +306,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException er) {
-				if (!Cruise_Control && !Hudson && !Aci) {
+				if (!Hudson && !Aci) {
 					System.out.println("Unable to find " + file_to_parse);
 				}
 			} catch (IOException er) {
@@ -359,7 +354,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if (!Cruise_Control && !Hudson && !Aci) {
+				if (!Hudson && !Aci) {
 					System.out.println("Unable to find" + file_to_parse);
 				}
 			} catch (IOException e) {
@@ -384,7 +379,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if (!Cruise_Control && !Hudson && !Aci) {
+				if (!Hudson && !Aci) {
 					System.out.println("Unable to find" + file_to_parse);
 				}
 			} catch (IOException e) {
@@ -408,7 +403,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if (!Cruise_Control && !Hudson && !Aci) {
+				if (!Hudson && !Aci) {
 					System.out.println("Unable to find" + file_to_parse);
 				}
 			} catch (IOException e) {
@@ -432,7 +427,7 @@ public class sqa_report {
 					System.exit(1);
 				}
 			} catch (FileNotFoundException e) {
-				if (!Cruise_Control && !Hudson && !Aci) {
+				if (!Hudson && !Aci) {
 					System.out.println("Unable to find" + file_to_parse);
 				}
 			} catch (IOException e) {
@@ -512,7 +507,7 @@ public class sqa_report {
 							rootdata.get_session(j).name,
 							my_tests.get(k).get_test(),
 							Discriminent.SPEED,
-							rootdata.get_session(j).get_cycle(my_tests.get(k)));
+							rootdata.get_session(j).get_cycle(my_tests.get(k),Discriminent.SPEED));
 				}
 			}
 			if (Debug_on) {
@@ -632,20 +627,21 @@ public class sqa_report {
 				System.out.println("generate cycle #2");
 			}
 			output_xls.create_new_page(rootdata, Discriminent.SPEED, Sections.LAST_SECTION);
+			if (Debug_on) {
+				System.out.println("generate cycle #3");
+			}
+			rootdata.compute_data(Discriminent.SPEED_APPLI);
+			if (Debug_on) {
+				System.out.println("generate cycle #4");
+			}
+			output_xls.create_new_page(rootdata, Discriminent.SPEED_APPLI, Sections.LAST_SECTION);
 		}
-
 		if (Debug_on) {
 			System.out.println("Cycles phase done");
 		}
 		output_xls.excel_terminate();
 		if (generate_output_info) {
-			if (Cruise_Control) {
-				if (ref_file.contains("branch")) {
-					summary.dump_summary(true, "branch");
-				} else {
-					summary.dump_summary(true, "ref");
-				}
-			} else if (Hudson) {
+			if (Hudson) {
 				String tmp_str = output_file_name;
 				if (output_file_name.lastIndexOf("/") > 0) {
 					tmp_str = output_file_name.substring(output_file_name.lastIndexOf("/") + 1, output_file_name.length());
@@ -669,7 +665,7 @@ public class sqa_report {
 				} else {
 					summary.dump_aci_summary(output_file_name.substring(output_file_name.lastIndexOf("/") + 1,output_file_name.lastIndexOf(".")), tmp_str, Aci_output_file_name);
 				}
-                        } else {
+            } else {
 				summary.dump_summary(false, "");
 			}
 		}

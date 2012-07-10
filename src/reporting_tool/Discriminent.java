@@ -6,5 +6,6 @@ public enum Discriminent {
 	  SIZE_FUNC,
 	  SIZE_APPLI,
 	  SPEED,
-	  SPEED_Vs_ARM
+	  SPEED_Vs_ARM,
+	  SPEED_APPLI
 }

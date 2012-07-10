@@ -41,6 +41,7 @@ public class TestSession {
 	private ArrayList<Test>  func_size_tests; 
 	private ArrayList<Test>  appli_size_tests; 
 	private ArrayList<Test>  speed_tests; 
+	private ArrayList<Test>  appli_speed_tests; 
 	private boolean extension_built;
 	public String name;
 	public String path;
@@ -111,6 +112,7 @@ public class TestSession {
 		}
 	}
 
+
 	private Test find_test(String name, Discriminent disc) {
 		for (int i=0; i<get_tests(disc).size();i++) {
 			if (get_tests(disc).get(i).name.contentEquals(name)) 
@@ -125,6 +127,7 @@ public class TestSession {
 		func_size_tests=new ArrayList<Test>();
 		appli_size_tests=new ArrayList<Test>();
 		speed_tests=new ArrayList<Test>();
+		appli_speed_tests=new ArrayList<Test>();
 		compiler_flags=new ArrayList<String>();
 		simulator_flags=new ArrayList<String>();
 		failures=new ArrayList<String>();
@@ -144,6 +147,7 @@ public class TestSession {
 		case SIZE_FUNC: return func_size_tests;
 		case SIZE_APPLI: return appli_size_tests;
 		case SPEED: return speed_tests; 
+		case SPEED_APPLI: return appli_speed_tests; 
 		default: return null;
 		}
 	}
@@ -326,21 +330,42 @@ public class TestSession {
 			if (sqa_report.warn_level > 0) System.err.println("INFO: Cycle count for FDO_Phase_1_Instrumentation ignored\n"); 
 			return;
 		}
+		
+		String local_test_name = compute_test_and_target_name(name.toLowerCase());
+		if (local_test_name.contains("eembc_") && target_name.contains("empty")) return; 
+
+		/*Add Application cycles*/
+		Discriminent disc = Discriminent.SPEED_APPLI;
+		Test current_appli_test = find_test(local_test_name,disc);
+		if (current_appli_test == null) {
+			current_appli_test =  new Test(local_test_name);
+			appli_speed_tests.add(current_appli_test);
+		}
+		Target mytarget = current_appli_test.find_target("All Test Aggregated");
+		if (mytarget==null) {
+			mytarget = current_appli_test.add_target("All Test Aggregated");
+			mytarget.cycles = value;
+		} else {
+			mytarget.cycles = mytarget.cycles + value;
+		}
+
 		for (int i=0; i<speed_tests.size();i++) {
 			if (speed_tests.get(i).name.contentEquals(name.toLowerCase())) {
 				if (sqa_report.warn_level > 0) System.err.println("WARNING: Test suit " + name + " already given, skipped\n"); 
 				return;
 			}
 		}
-		String local_test_name = compute_test_and_target_name(name.toLowerCase());
-		if (local_test_name.contains("eembc_") && target_name.contains("empty")) return; 
+		
 		Test mytest = find_test(local_test_name,Discriminent.SPEED);
 		if (mytest == null) mytest =  new Test(local_test_name);
 		speed_tests.add(mytest);
-		Target mytarget = mytest.find_target(target_name);
+		mytarget = mytest.find_target(target_name);
 		if (mytarget == null) mytarget=mytest.add_target(target_name);
 		if (mytarget.cycles != -1)  value += mytarget.cycles;
 		mytarget.cycles = value;
+
+	
+	
 	}
 
 	public void set_current_test_parsing(String bench_name, String phase_name) {
@@ -487,9 +512,9 @@ public class TestSession {
 		return false;
 	}
 
-	public long get_cycle(RootTest tests) {
+	public long get_cycle(RootTest tests, Discriminent disc) {
 		if (!CommonData.is_same_list(compiler_flags,tests.get_options()))  return -1;
-		Test mytst= find_test(tests.get_test(),Discriminent.SPEED);
+		Test mytst= find_test(tests.get_test(),disc);
 		if (mytst==null) {
 			if (has_failed(tests.get_test(),tests.get_target()))  return   CommonData.HAS_FAILED;
 			return -1;  
@@ -611,17 +636,8 @@ public class TestSession {
 	}
 
 	public void set_compiler_name(String name) {
-		if (!sqa_report.Cruise_Control) {
-			compiler_name=name;
-			toolst_path=name;
-		}
-		else {
-			// /home/compwork/cruisecontrol/open64-nightly-res/compilers/open64-linux-dt25-dev-gcm-merge-4-2-23140/stxp70v4/toolset
-			toolst_path=name;
-			compiler_name = name.substring(name.indexOf("open64-linux")+13);
-			compiler_name = compiler_name.substring(0,compiler_name.indexOf("/"));
-		}
-		
+		compiler_name=name;
+		toolst_path=name;
 	}
 	
 	public void set_logdir_info(String node, String name) {

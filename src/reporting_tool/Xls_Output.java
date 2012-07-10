@@ -309,13 +309,8 @@ public class Xls_Output {
 
 		for (i = 0; i < nb_sessions_to_dump; i++) {
 			TestSession my_session = rootdata.get_session(i);
-			if (sqa_report.Cruise_Control) {
-				string_cell(cur_work_row, DATA_FIRST_COLUMN + i, BOLDCENTERWRAP_STYL_ID, my_session.compiler_name);
-				string_cell(cur_work_row, COMP_FIRST_COLUMN + i, BOLDCENTERWRAP_STYL_ID, my_session.compiler_name);
-			} else {
-				string_cell(cur_work_row, DATA_FIRST_COLUMN + i, BOLDCENTERWRAP_STYL_ID, my_session.name);
-				string_cell(cur_work_row, COMP_FIRST_COLUMN + i, BOLDCENTERWRAP_STYL_ID, my_session.name);
-			}
+			string_cell(cur_work_row, DATA_FIRST_COLUMN + i, BOLDCENTERWRAP_STYL_ID, my_session.name);
+			string_cell(cur_work_row, COMP_FIRST_COLUMN + i, BOLDCENTERWRAP_STYL_ID, my_session.name);
 		}
 
 		// VALUES
@@ -339,10 +334,10 @@ public class Xls_Output {
 			for (int j = 0; j < rootdata.get_nb_sessions(); j++) {
 				TestSession my_session = rootdata.get_session(j);
 				long val;
-				if (disc != Discriminent.SPEED) {
-					val = my_session.get_size(my_test, sec, disc, false);
+				if (disc == Discriminent.SPEED || disc == Discriminent.SPEED_APPLI) {
+					val = my_session.get_cycle(my_test, disc);
 				} else {
-					val = my_session.get_cycle(my_test);
+					val = my_session.get_size(my_test, sec, disc, false);
 				}
 				switch ((int) val) {
 				case CommonData.NOT_EXECUTED:
@@ -448,6 +443,178 @@ public class Xls_Output {
 
 	}
 
+	private void create_synt_page(RootDataClass rootdata, String name, String title, Discriminent disc, Sections sec) {
+		int nb_sessions_to_dump = rootdata.get_nb_sessions();
+		int nb_max_data = rootdata.get_nb_max_data();
+		int COMP_FIRST_COLUMN = nb_sessions_to_dump + DATA_FIRST_COLUMN + 2;
+		int i;
+		Sheet computed_sheet = wb.createSheet(name);
+		Row cur_work_row;
+		// Columns formatting
+		computed_sheet.setColumnWidth(FIRST_COLUMN, 90 * 50);
+		computed_sheet.setColumnWidth(FIRST_COLUMN + 1, 180 * 50);
+		computed_sheet.setColumnWidth(FIRST_COLUMN + 2, 70 * 50);
+		computed_sheet.setColumnHidden(COMP_FIRST_COLUMN - 2, true);
+		computed_sheet.setColumnWidth(COMP_FIRST_COLUMN - 1, 100 * 50);
+		for (i = 0; i < nb_sessions_to_dump; i++) {
+			computed_sheet.setColumnWidth(DATA_FIRST_COLUMN + i, 80 * 50);
+			computed_sheet.setColumnWidth(COMP_FIRST_COLUMN + i, 80 * 50);
+		}
+
+		computed_sheet.createFreezePane(DATA_FIRST_COLUMN, 0);
+
+		// Title
+		string_cell(computed_sheet.createRow(FIRST_ROW), FIRST_COLUMN, BOLDLEFT_STYL_ID_16, title);
+
+		// Statistics
+		Row rfail = computed_sheet.createRow(NBFAILS_FIRST_ROW);
+		Row ravg = computed_sheet.createRow(STAT_FIRST_ROW);
+		Row rgeo = computed_sheet.createRow(STAT_FIRST_ROW + 1);
+		Row rmin = computed_sheet.createRow(STAT_FIRST_ROW + 2);
+		Row rmax = computed_sheet.createRow(STAT_FIRST_ROW + 3);
+		Row rmed = computed_sheet.createRow(STAT_FIRST_ROW + 4);
+		Row rtot = computed_sheet.createRow(STAT_FIRST_ROW + 5);
+
+		string_cell(rfail, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Failures");
+		string_cell(ravg, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Average");
+		string_cell(rgeo, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Geomean");
+		string_cell(rmin, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Min");
+		string_cell(rmax, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Max");
+		string_cell(rmed, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Median");
+		string_cell(rtot, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Total");
+
+		for (i = 0; i < nb_sessions_to_dump; i++) {
+			String reffail = create_column_name(i + DATA_FIRST_COLUMN) + "14:" + create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
+			// Number of FAILs
+			formula_cell(rfail, i + 1 + NBFAILS_FIRST_COL, "COUNTIF(" + reffail + ",\"FAIL*\")");
+			// Average - Geomean - Min - Max - Median - Total
+			String ref = create_column_name(i + COMP_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + 1) + ":" + create_column_name(i + COMP_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
+			formula_cell(ravg, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "AVERAGE(" + ref + ")");
+			formula_cell(rgeo, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "GEOMEAN(" + ref + ")");
+			formula_cell(rmin, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "MIN(" + ref + ")");
+			formula_cell(rmax, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "MAX(" + ref + ")");
+			formula_cell(rmed, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "MEDIAN(" + ref + ")");
+			String right = create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + 1) + ":" + create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
+			String left = create_column_name(COMP_FIRST_COLUMN - 2) + String.valueOf(HEADER_NB_ROWS + 1) + ":" + create_column_name(COMP_FIRST_COLUMN - 2) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
+			String formula_any = "SUMIF(" + left + ",\">0\"," + right + ")/SUMIF(" + right + ",\">0\"," + left + ")";
+			String prev_val = create_column_name(i - 1 + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + 1) + ":" + create_column_name(i - 1 + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
+			String formula_prev = "SUMIF(" + prev_val + ",\">0\"," + right + ")/SUMIF(" + right + ",\">0\"," + prev_val + ")";
+			formula_cell(rtot, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "IF($B$15=0," + formula_prev + "," + formula_any + ")");
+		}
+
+		cur_work_row = computed_sheet.createRow(VERS_NUM_FIRST_ROW);
+		string_cell(cur_work_row, VERS_NUM_FIRST_COL, BOLDCENTER_STYL_ID, "Session");
+
+		for (i = 0; i < nb_sessions_to_dump; i++) {
+			string_cell(cur_work_row, DATA_FIRST_COLUMN + i, BOLDCENTER_STYL_ID, (i + 1) + " Vs REF");
+		}
+
+		// Tags
+		cur_work_row = computed_sheet.createRow(VERS_NUM_FIRST_ROW + 1);
+		string_cell(cur_work_row, VERS_NUM_FIRST_COL, BOLDCENTER_STYL_ID, "Tags");
+
+		for (i = 0; i < nb_sessions_to_dump; i++) {
+			TestSession my_session = rootdata.get_session(i);
+			string_cell(cur_work_row, DATA_FIRST_COLUMN + i, BOLDCENTERWRAP_STYL_ID, my_session.name);
+		}
+
+		// VALUES
+		ArrayList<RootTest> my_tests = rootdata.get_disc();
+		String current_test_name=null;
+		int first_test_row=0;
+		int nb_tests=0;
+		for (int disc_iter=0 ; disc_iter < my_tests.size(); disc_iter++) {
+			RootTest my_test = my_tests.get(disc_iter);
+			if (current_test_name == null) {
+				current_test_name=my_test.get_test();
+				first_test_row = HEADER_NB_ROWS + disc_iter;
+			}
+			if (current_test_name != my_test.get_test() || disc_iter == my_tests.size()-1) {
+				/*We have a transition so print the line*/
+				int cur_row_number = HEADER_NB_ROWS + nb_tests;
+				cur_work_row = computed_sheet.createRow(cur_row_number);
+				
+				/* Dump 3 first columns (test name, target, options) */
+				string_cell(cur_work_row, FIRST_COLUMN, current_test_name);
+				string_cell(cur_work_row, FIRST_COLUMN + 1, "Test Suit Aggregated");
+				string_cell(cur_work_row, FIRST_COLUMN + 2, "");
+			
+				for (int j = 0; j < rootdata.get_nb_sessions(); j++) {
+					TestSession my_session = rootdata.get_session(j);
+					String col_name = create_column_name(COMP_FIRST_COLUMN + j);
+					int row_nb = HEADER_NB_ROWS + disc_iter;
+					String formula = "GEOMEAN(Cycles!" + col_name +  first_test_row + ":" + col_name + row_nb + ")";
+					//String full = "GEOMEAN(IF($B$" + (VERS_NUM_FIRST_ROW + 1) + ":$B$" + ")";
+					formula_cell(cur_work_row, DATA_FIRST_COLUMN + j, PERCENT_STYL_ID, formula);
+					//string_cell(cur_work_row, DATA_FIRST_COLUMN + j, "(not executed)");
+				}
+					
+				/*Prepare for next iterations*/
+				current_test_name = my_test.get_test();
+				first_test_row = HEADER_NB_ROWS + disc_iter;
+				nb_tests++;
+			}
+		}
+		
+		computed_sheet.setZoom(3, 4);
+		// Generate formatting
+		HSSFPatternFormatting CurFmt;
+		HSSFFontFormatting CurFnt;
+		HSSFConditionalFormattingRule Rule1, Rule2, Rule3;
+
+		//---------------------------------------------------------------------------------------------------------
+		// Conditional formatting for MAIN TABLE
+		CellRangeAddress[] range1 = {
+				new CellRangeAddress(HEADER_NB_ROWS, HEADER_NB_ROWS + nb_tests - 1, DATA_FIRST_COLUMN + 1, DATA_FIRST_COLUMN + nb_sessions_to_dump - 1),
+				new CellRangeAddress(STAT_FIRST_ROW, STAT_FIRST_ROW + STAT_NB_ROWS - 1, DATA_FIRST_COLUMN + 1, DATA_FIRST_COLUMN + nb_sessions_to_dump - 1),};
+		CellRangeAddress[] range2 = {
+				new CellRangeAddress(NBFAILS_FIRST_ROW, NBFAILS_FIRST_ROW, NBFAILS_FIRST_COL + 1, NBFAILS_FIRST_COL + nb_sessions_to_dump)
+		};
+		HSSFSheetConditionalFormatting mycf = ((HSSFSheet) computed_sheet).getSheetConditionalFormatting();
+		String ref = "INDIRECT(ADDRESS(ROW(),COLUMN(),,))";
+
+		//Failure
+		Rule1 = mycf.createConditionalFormattingRule("OR(" + ref + "=\"FAIL(make error)\"," + ref + "=\"FAIL(Diff)\")");
+		CurFmt = Rule1.createPatternFormatting();
+		CurFmt.setFillBackgroundColor(IndexedColors.VIOLET.getIndex());
+		CurFnt = Rule1.createFontFormatting();
+		CurFnt.setFontColorIndex(IndexedColors.WHITE.getIndex());
+
+		// Bad
+		Rule2 = mycf.createConditionalFormattingRule("AND(T(" + ref + ")=\"\"," + ref + ">1)");
+		CurFmt = Rule2.createPatternFormatting();
+		CurFmt.setFillBackgroundColor(IndexedColors.RED.getIndex());
+		CurFnt = Rule2.createFontFormatting();
+		CurFnt.setFontColorIndex(IndexedColors.WHITE.getIndex());
+
+		// Good
+		Rule3 = mycf.createConditionalFormattingRule("AND(T(" + ref + ")=\"\"," + ref + "<1)");
+		CurFmt = Rule3.createPatternFormatting();
+		CurFmt.setFillBackgroundColor(IndexedColors.GREEN.getIndex());
+		CurFnt = Rule3.createFontFormatting();
+		CurFnt.setFontColorIndex(IndexedColors.WHITE.getIndex());
+		HSSFConditionalFormattingRule[] cfRules = {Rule1, Rule2, Rule3};
+		mycf.addConditionalFormatting(range1, cfRules);
+
+		//---------------------------------------------------------------------------------------------------------
+		// Conditional formatting for NUMBER OF FAILS
+		// Bad
+		Rule1 = mycf.createConditionalFormattingRule(ComparisonOperator.GT, "0", null);
+		CurFmt = Rule1.createPatternFormatting();
+		CurFmt.setFillBackgroundColor(IndexedColors.RED.getIndex());
+		CurFnt = Rule1.createFontFormatting();
+		CurFnt.setFontColorIndex(IndexedColors.WHITE.getIndex());
+
+		// Good
+		Rule2 = mycf.createConditionalFormattingRule(ComparisonOperator.EQUAL, "0", null);
+		CurFmt = Rule2.createPatternFormatting();
+		CurFnt = Rule2.createFontFormatting();
+		CurFnt.setFontColorIndex(IndexedColors.WHITE.getIndex());
+		CurFmt.setFillBackgroundColor(IndexedColors.GREEN.getIndex());
+		mycf.addConditionalFormatting(range2, Rule1, Rule2);
+
+	}
+
 	public void create_new_page(RootDataClass rootdata, Discriminent disc, Sections sec) {
 		if (rootdata.get_nb_max_data() == 0) {
 			return;
@@ -492,8 +659,11 @@ public class Xls_Output {
 			data_name = "Size_" + name;
 			title = "Size analysis on " + name + " Section";
 			create_full_page(rootdata, data_name, title, disc, sec);
-		} else {
+		} else if (disc == Discriminent.SPEED) {
 			create_full_page(rootdata, "Cycles", "Cycles Analysis", disc, sec);
+			create_synt_page(rootdata, "Cycles_Geomean", "Cycles Analysis", disc, sec);
+		} else if (disc == Discriminent.SPEED_APPLI) {
+			create_full_page(rootdata, "Cycles_Per_Suite", "Cycles Analysis Per Suite", disc, sec);
 		}
 	}
 
