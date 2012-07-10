@@ -448,6 +448,7 @@ public class Xls_Output {
 		int nb_max_data = rootdata.get_nb_max_data();
 		int COMP_FIRST_COLUMN = nb_sessions_to_dump + DATA_FIRST_COLUMN + 2;
 		int i;
+		int nb_tests=0;
 		Sheet computed_sheet = wb.createSheet(name);
 		Row cur_work_row;
 		// Columns formatting
@@ -473,7 +474,6 @@ public class Xls_Output {
 		Row rmin = computed_sheet.createRow(STAT_FIRST_ROW + 2);
 		Row rmax = computed_sheet.createRow(STAT_FIRST_ROW + 3);
 		Row rmed = computed_sheet.createRow(STAT_FIRST_ROW + 4);
-		Row rtot = computed_sheet.createRow(STAT_FIRST_ROW + 5);
 
 		string_cell(rfail, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Failures");
 		string_cell(ravg, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Average");
@@ -481,26 +481,7 @@ public class Xls_Output {
 		string_cell(rmin, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Min");
 		string_cell(rmax, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Max");
 		string_cell(rmed, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Median");
-		string_cell(rtot, NBFAILS_FIRST_COL, BOLDCENTER_STYL_ID, "Total");
 
-		for (i = 0; i < nb_sessions_to_dump; i++) {
-			String reffail = create_column_name(i + DATA_FIRST_COLUMN) + "14:" + create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
-			// Number of FAILs
-			formula_cell(rfail, i + 1 + NBFAILS_FIRST_COL, "COUNTIF(" + reffail + ",\"FAIL*\")");
-			// Average - Geomean - Min - Max - Median - Total
-			String ref = create_column_name(i + COMP_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + 1) + ":" + create_column_name(i + COMP_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
-			formula_cell(ravg, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "AVERAGE(" + ref + ")");
-			formula_cell(rgeo, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "GEOMEAN(" + ref + ")");
-			formula_cell(rmin, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "MIN(" + ref + ")");
-			formula_cell(rmax, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "MAX(" + ref + ")");
-			formula_cell(rmed, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "MEDIAN(" + ref + ")");
-			String right = create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + 1) + ":" + create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
-			String left = create_column_name(COMP_FIRST_COLUMN - 2) + String.valueOf(HEADER_NB_ROWS + 1) + ":" + create_column_name(COMP_FIRST_COLUMN - 2) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
-			String formula_any = "SUMIF(" + left + ",\">0\"," + right + ")/SUMIF(" + right + ",\">0\"," + left + ")";
-			String prev_val = create_column_name(i - 1 + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + 1) + ":" + create_column_name(i - 1 + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_max_data);
-			String formula_prev = "SUMIF(" + prev_val + ",\">0\"," + right + ")/SUMIF(" + right + ",\">0\"," + prev_val + ")";
-			formula_cell(rtot, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "IF($B$15=0," + formula_prev + "," + formula_any + ")");
-		}
 
 		cur_work_row = computed_sheet.createRow(VERS_NUM_FIRST_ROW);
 		string_cell(cur_work_row, VERS_NUM_FIRST_COL, BOLDCENTER_STYL_ID, "Session");
@@ -522,7 +503,6 @@ public class Xls_Output {
 		ArrayList<RootTest> my_tests = rootdata.get_disc();
 		String current_test_name=null;
 		int first_test_row=0;
-		int nb_tests=0;
 		for (int disc_iter=0 ; disc_iter < my_tests.size(); disc_iter++) {
 			RootTest my_test = my_tests.get(disc_iter);
 			if (current_test_name == null) {
@@ -536,17 +516,14 @@ public class Xls_Output {
 				
 				/* Dump 3 first columns (test name, target, options) */
 				string_cell(cur_work_row, FIRST_COLUMN, current_test_name);
-				string_cell(cur_work_row, FIRST_COLUMN + 1, "Test Suit Aggregated");
+				string_cell(cur_work_row, FIRST_COLUMN + 1, "Test Suite Aggregated");
 				string_cell(cur_work_row, FIRST_COLUMN + 2, "");
 			
 				for (int j = 0; j < rootdata.get_nb_sessions(); j++) {
-					TestSession my_session = rootdata.get_session(j);
 					String col_name = create_column_name(COMP_FIRST_COLUMN + j);
 					int row_nb = HEADER_NB_ROWS + disc_iter;
 					String formula = "GEOMEAN(Cycles!" + col_name +  first_test_row + ":" + col_name + row_nb + ")";
-					//String full = "GEOMEAN(IF($B$" + (VERS_NUM_FIRST_ROW + 1) + ":$B$" + ")";
 					formula_cell(cur_work_row, DATA_FIRST_COLUMN + j, PERCENT_STYL_ID, formula);
-					//string_cell(cur_work_row, DATA_FIRST_COLUMN + j, "(not executed)");
 				}
 					
 				/*Prepare for next iterations*/
@@ -555,6 +532,20 @@ public class Xls_Output {
 				nb_tests++;
 			}
 		}
+
+		for (i = 0; i < nb_sessions_to_dump; i++) {
+			String reffail = create_column_name(i + DATA_FIRST_COLUMN) + "14:" + create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_tests);
+			// Number of FAILs
+			formula_cell(rfail, i + 1 + NBFAILS_FIRST_COL, "COUNTIF(" + reffail + ",\"FAIL*\")");
+			// Average - Geomean - Min - Max - Median
+			String ref = create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + 1) + ":" + create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_tests);
+			formula_cell(ravg, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "AVERAGE(" + ref + ")");
+			formula_cell(rgeo, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "GEOMEAN(" + ref + ")");
+			formula_cell(rmin, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "MIN(" + ref + ")");
+			formula_cell(rmax, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "MAX(" + ref + ")");
+			formula_cell(rmed, i + 1 + NBFAILS_FIRST_COL, PERCENT_STYL_ID, "MEDIAN(" + ref + ")");
+		}
+
 		
 		computed_sheet.setZoom(3, 4);
 		// Generate formatting
@@ -566,7 +557,7 @@ public class Xls_Output {
 		// Conditional formatting for MAIN TABLE
 		CellRangeAddress[] range1 = {
 				new CellRangeAddress(HEADER_NB_ROWS, HEADER_NB_ROWS + nb_tests - 1, DATA_FIRST_COLUMN + 1, DATA_FIRST_COLUMN + nb_sessions_to_dump - 1),
-				new CellRangeAddress(STAT_FIRST_ROW, STAT_FIRST_ROW + STAT_NB_ROWS - 1, DATA_FIRST_COLUMN + 1, DATA_FIRST_COLUMN + nb_sessions_to_dump - 1),};
+				new CellRangeAddress(STAT_FIRST_ROW, STAT_FIRST_ROW + STAT_NB_ROWS - 2, DATA_FIRST_COLUMN + 1, DATA_FIRST_COLUMN + nb_sessions_to_dump - 1),};
 		CellRangeAddress[] range2 = {
 				new CellRangeAddress(NBFAILS_FIRST_ROW, NBFAILS_FIRST_ROW, NBFAILS_FIRST_COL + 1, NBFAILS_FIRST_COL + nb_sessions_to_dump)
 		};

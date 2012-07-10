@@ -26,6 +26,7 @@ public class sqa_report {
 	static boolean bin_size = true;
 	static boolean func_size = true;
 	static boolean cycle = true;
+	static boolean sum_cycle = false ;
 	static boolean compare_options = true;
 	static boolean generate_output_info = true;
 	private static int nb_tst = 0;
@@ -630,6 +631,8 @@ public class sqa_report {
 			if (Debug_on) {
 				System.out.println("generate cycle #3");
 			}
+		}
+		if (sum_cycle) {
 			rootdata.compute_data(Discriminent.SPEED_APPLI);
 			if (Debug_on) {
 				System.out.println("generate cycle #4");

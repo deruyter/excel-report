@@ -341,9 +341,9 @@ public class TestSession {
 			current_appli_test =  new Test(local_test_name);
 			appli_speed_tests.add(current_appli_test);
 		}
-		Target mytarget = current_appli_test.find_target("All Test Aggregated");
+		Target mytarget = current_appli_test.find_target("Test Suite Aggregated");
 		if (mytarget==null) {
-			mytarget = current_appli_test.add_target("All Test Aggregated");
+			mytarget = current_appli_test.add_target("Test Suite Aggregated");
 			mytarget.cycles = value;
 		} else {
 			mytarget.cycles = mytarget.cycles + value;
