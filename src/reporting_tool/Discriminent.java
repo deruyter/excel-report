@@ -5,7 +5,8 @@ public enum Discriminent {
 	  SIZE_BIN,
 	  SIZE_FUNC,
 	  SIZE_APPLI,
+	  SIZE_APPLI_SUITE,
 	  SPEED,
 	  SPEED_Vs_ARM,
-	  SPEED_APPLI
+	  SPEED_APPLI_SUITE
 }

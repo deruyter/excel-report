@@ -613,6 +613,11 @@ public class sqa_report {
 			for (i = 0; i < sizes_for_computation.size(); i++) {
 				output_xls.create_new_page(rootdata, Discriminent.SIZE_APPLI, sizes_for_computation.get(i));
 			}
+			rootdata.compute_data(Discriminent.SIZE_APPLI_SUITE);
+			System.out.println("Ask for computation");
+			for (i = 0; i < sizes_for_computation.size(); i++) {
+				output_xls.create_new_page(rootdata, Discriminent.SIZE_APPLI_SUITE, sizes_for_computation.get(i));
+			}
 		}
 		if (Debug_on) {
 			System.out.println("Func phase done");
@@ -633,11 +638,11 @@ public class sqa_report {
 			}
 		}
 		if (sum_cycle) {
-			rootdata.compute_data(Discriminent.SPEED_APPLI);
+			rootdata.compute_data(Discriminent.SPEED_APPLI_SUITE);
 			if (Debug_on) {
 				System.out.println("generate cycle #4");
 			}
-			output_xls.create_new_page(rootdata, Discriminent.SPEED_APPLI, Sections.LAST_SECTION);
+			output_xls.create_new_page(rootdata, Discriminent.SPEED_APPLI_SUITE, Sections.LAST_SECTION);
 		}
 		if (Debug_on) {
 			System.out.println("Cycles phase done");

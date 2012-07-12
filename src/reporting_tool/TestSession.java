@@ -40,6 +40,7 @@ public class TestSession {
 	private ArrayList<Test>  bin_size_tests; 
 	private ArrayList<Test>  func_size_tests; 
 	private ArrayList<Test>  appli_size_tests; 
+	private ArrayList<Test>  appli_size_suite_tests;
 	private ArrayList<Test>  speed_tests; 
 	private ArrayList<Test>  appli_speed_tests; 
 	private boolean extension_built;
@@ -126,6 +127,7 @@ public class TestSession {
 		bin_size_tests=new ArrayList<Test>();
 		func_size_tests=new ArrayList<Test>();
 		appli_size_tests=new ArrayList<Test>();
+		appli_size_suite_tests=new ArrayList<Test>();
 		speed_tests=new ArrayList<Test>();
 		appli_speed_tests=new ArrayList<Test>();
 		compiler_flags=new ArrayList<String>();
@@ -146,8 +148,9 @@ public class TestSession {
 		case SIZE_BIN: return bin_size_tests; 
 		case SIZE_FUNC: return func_size_tests;
 		case SIZE_APPLI: return appli_size_tests;
+		case SIZE_APPLI_SUITE: return appli_size_suite_tests;
 		case SPEED: return speed_tests; 
-		case SPEED_APPLI: return appli_speed_tests; 
+		case SPEED_APPLI_SUITE: return appli_speed_tests; 
 		default: return null;
 		}
 	}
@@ -307,6 +310,26 @@ public class TestSession {
 			Integer old_size = mytarget.get_tgt_size(Sections.TEXT); 
 			mytarget.set_size(Sections.TEXT, size + old_size);
 		}
+
+		/*Add appli suite size*/
+		current_appli_test=null;
+		disc = Discriminent.SIZE_APPLI_SUITE;
+		current_appli_test = find_test(tmp_test_name,disc);
+		if (current_appli_test == null) {
+			//System.out.println("Test #1 : " + tmp_test_name);
+			current_appli_test =  new Test(tmp_test_name);
+			appli_size_suite_tests.add(current_appli_test);
+		}
+		mytarget = current_appli_test.find_target("Test Suite Aggregated");
+		if (mytarget==null) {
+			mytarget = current_appli_test.add_target("Test Suite Aggregated");
+			//System.out.println("Test #2");
+			mytarget.set_size(Sections.TEXT, size);
+		} else {
+			//System.out.println("Test #3");
+			Integer old_size = mytarget.get_tgt_size(Sections.TEXT); 
+			mytarget.set_size(Sections.TEXT, size + old_size);
+		}
 	}
 
 	private String compute_size_test_target_name(String test_name, String object) {
@@ -335,7 +358,7 @@ public class TestSession {
 		if (local_test_name.contains("eembc_") && target_name.contains("empty")) return; 
 
 		/*Add Application cycles*/
-		Discriminent disc = Discriminent.SPEED_APPLI;
+		Discriminent disc = Discriminent.SPEED_APPLI_SUITE;
 		Test current_appli_test = find_test(local_test_name,disc);
 		if (current_appli_test == null) {
 			current_appli_test =  new Test(local_test_name);
@@ -471,6 +494,7 @@ public class TestSession {
 			appli_size_tests.add(new Test("mp1v_viterbi"));
 			appli_size_tests.add(new Test("fx_samplerate"));
 			appli_size_tests.add(new Test("ts4x_test"));
+
 			return;
 		}
 

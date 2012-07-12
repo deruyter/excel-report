@@ -334,7 +334,7 @@ public class Xls_Output {
 			for (int j = 0; j < rootdata.get_nb_sessions(); j++) {
 				TestSession my_session = rootdata.get_session(j);
 				long val;
-				if (disc == Discriminent.SPEED || disc == Discriminent.SPEED_APPLI) {
+				if (disc == Discriminent.SPEED || disc == Discriminent.SPEED_APPLI_SUITE) {
 					val = my_session.get_cycle(my_test, disc);
 				} else {
 					val = my_session.get_size(my_test, sec, disc, false);
@@ -445,7 +445,6 @@ public class Xls_Output {
 
 	private void create_synt_page(RootDataClass rootdata, String name, String title, Discriminent disc, Sections sec) {
 		int nb_sessions_to_dump = rootdata.get_nb_sessions();
-		int nb_max_data = rootdata.get_nb_max_data();
 		int COMP_FIRST_COLUMN = nb_sessions_to_dump + DATA_FIRST_COLUMN + 2;
 		int i;
 		int nb_tests=0;
@@ -502,12 +501,12 @@ public class Xls_Output {
 		// VALUES
 		ArrayList<RootTest> my_tests = rootdata.get_disc();
 		String current_test_name=null;
-		int first_test_row=0;
+		int first_test_row=1;
 		for (int disc_iter=0 ; disc_iter < my_tests.size(); disc_iter++) {
 			RootTest my_test = my_tests.get(disc_iter);
 			if (current_test_name == null) {
 				current_test_name=my_test.get_test();
-				first_test_row = HEADER_NB_ROWS + disc_iter;
+				first_test_row = HEADER_NB_ROWS + disc_iter + 1;
 			}
 			if (current_test_name != my_test.get_test() || disc_iter == my_tests.size()-1) {
 				/*We have a transition so print the line*/
@@ -528,7 +527,7 @@ public class Xls_Output {
 					
 				/*Prepare for next iterations*/
 				current_test_name = my_test.get_test();
-				first_test_row = HEADER_NB_ROWS + disc_iter;
+				first_test_row = HEADER_NB_ROWS + disc_iter + 1;
 				nb_tests++;
 			}
 		}
@@ -556,8 +555,8 @@ public class Xls_Output {
 		//---------------------------------------------------------------------------------------------------------
 		// Conditional formatting for MAIN TABLE
 		CellRangeAddress[] range1 = {
-				new CellRangeAddress(HEADER_NB_ROWS, HEADER_NB_ROWS + nb_tests - 1, DATA_FIRST_COLUMN + 1, DATA_FIRST_COLUMN + nb_sessions_to_dump - 1),
-				new CellRangeAddress(STAT_FIRST_ROW, STAT_FIRST_ROW + STAT_NB_ROWS - 2, DATA_FIRST_COLUMN + 1, DATA_FIRST_COLUMN + nb_sessions_to_dump - 1),};
+				new CellRangeAddress(HEADER_NB_ROWS, HEADER_NB_ROWS + nb_tests - 1, DATA_FIRST_COLUMN, DATA_FIRST_COLUMN + nb_sessions_to_dump - 1),
+				new CellRangeAddress(STAT_FIRST_ROW, STAT_FIRST_ROW + STAT_NB_ROWS - 2, DATA_FIRST_COLUMN, DATA_FIRST_COLUMN + nb_sessions_to_dump - 1),};
 		CellRangeAddress[] range2 = {
 				new CellRangeAddress(NBFAILS_FIRST_ROW, NBFAILS_FIRST_ROW, NBFAILS_FIRST_COL + 1, NBFAILS_FIRST_COL + nb_sessions_to_dump)
 		};
@@ -610,7 +609,7 @@ public class Xls_Output {
 		if (rootdata.get_nb_max_data() == 0) {
 			return;
 		}
-		if (disc == Discriminent.SIZE_OBJ || disc == Discriminent.SIZE_BIN || disc == Discriminent.SIZE_FUNC || disc == Discriminent.SIZE_APPLI) {
+		if (disc == Discriminent.SIZE_OBJ || disc == Discriminent.SIZE_BIN || disc == Discriminent.SIZE_FUNC || disc == Discriminent.SIZE_APPLI || disc == Discriminent.SIZE_APPLI_SUITE) {
 			String name = null, data_name, title;
 			switch (sec) {
 			case TEXT:
@@ -647,13 +646,16 @@ public class Xls_Output {
 			if (disc == Discriminent.SIZE_APPLI) {
 				name = name.concat("_Appli");
 			}
+			if (disc == Discriminent.SIZE_APPLI_SUITE) {
+				name = name.concat("_Per_Suite");
+			}
 			data_name = "Size_" + name;
 			title = "Size analysis on " + name + " Section";
 			create_full_page(rootdata, data_name, title, disc, sec);
 		} else if (disc == Discriminent.SPEED) {
 			create_full_page(rootdata, "Cycles", "Cycles Analysis", disc, sec);
 			create_synt_page(rootdata, "Cycles_Geomean", "Cycles Analysis", disc, sec);
-		} else if (disc == Discriminent.SPEED_APPLI) {
+		} else if (disc == Discriminent.SPEED_APPLI_SUITE) {
 			create_full_page(rootdata, "Cycles_Per_Suite", "Cycles Analysis Per Suite", disc, sec);
 		}
 	}
