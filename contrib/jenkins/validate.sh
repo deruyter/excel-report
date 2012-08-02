@@ -75,5 +75,6 @@ msg_check() {
 tmp_file=/tmp/test_jobtools_tmp_$$
 trap "cleanup" 0 1 2 15
 
+echo "Something has to be done here" > test_report.log
 
 exit 0
