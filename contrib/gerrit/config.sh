@@ -3,7 +3,7 @@
 # Can be overriden by a local.sh file in the same directory.
 #
 server=ssh://gnx5855.gnb.st.com:29418
-project=<Your project>
+project=excel-report
 branch=master
-reviewers="christophe.guillon@st.com thomas.thery@st.com jeremy.bernard@st.com bruno.lavigueur@st.com"
+reviewers="thomas.deruyter@st.com vincent.lorquet@st.com"
 remote=gerrit
