@@ -508,7 +508,7 @@ public class Xls_Output {
 				current_test_name=my_test.get_test();
 				first_test_row = HEADER_NB_ROWS + disc_iter + 1;
 			}
-			if (current_test_name != my_test.get_test() || disc_iter == my_tests.size()-1) {
+			if (current_test_name != my_test.get_test()) {
 				/*We have a transition so print the line*/
 				int cur_row_number = HEADER_NB_ROWS + nb_tests;
 				cur_work_row = computed_sheet.createRow(cur_row_number);
@@ -531,7 +531,24 @@ public class Xls_Output {
 				nb_tests++;
 			}
 		}
-
+		/* Last item must be displayed */
+		/*We have a transition so print the line*/
+		int cur_row_number = HEADER_NB_ROWS + nb_tests;
+		cur_work_row = computed_sheet.createRow(cur_row_number);
+		
+		/* Dump 3 first columns (test name, target, options) */
+		string_cell(cur_work_row, FIRST_COLUMN, current_test_name);
+		string_cell(cur_work_row, FIRST_COLUMN + 1, "Test Suite Aggregated");
+		string_cell(cur_work_row, FIRST_COLUMN + 2, "");
+	
+		for (int j = 0; j < rootdata.get_nb_sessions(); j++) {
+			String col_name = create_column_name(COMP_FIRST_COLUMN + j);
+			int row_nb = HEADER_NB_ROWS + my_tests.size();
+			String formula = "GEOMEAN(Cycles!" + col_name +  first_test_row + ":" + col_name + row_nb + ")";
+			formula_cell(cur_work_row, DATA_FIRST_COLUMN + j, PERCENT_STYL_ID, formula);
+		}
+		nb_tests++;
+		
 		for (i = 0; i < nb_sessions_to_dump; i++) {
 			String reffail = create_column_name(i + DATA_FIRST_COLUMN) + "14:" + create_column_name(i + DATA_FIRST_COLUMN) + String.valueOf(HEADER_NB_ROWS + nb_tests);
 			// Number of FAILs

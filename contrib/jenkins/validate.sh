@@ -6,6 +6,10 @@
 mydir=`dirname $0`
 mydir=`cd $mydir/../..;pwd`
 
+WORKSPACE=${WORKSPACE:-$mydir}
+artifacts=${WORKSPACE}/logs
+mkdir -p ${artifacts}
+
 cleanup() { rm -f $tmp_file; }
 
 declare -i nfail=0
@@ -75,6 +79,8 @@ msg_check() {
 tmp_file=/tmp/test_jobtools_tmp_$$
 trap "cleanup" 0 1 2 15
 
-echo "Something has to be done here" > test_report.log
-
+echo "Something has to be done here" > ${artifacts}/test_report.log
+cd ${mydir}
+sh build.sh > ${artifacts}/build.log
+mv sqa-report.jar  ${artifacts}/.
 exit 0
